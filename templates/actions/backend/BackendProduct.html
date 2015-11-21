@@ -1,0 +1,60 @@
+{foreach $domain_routes as $domain => $routes}
+    {foreach $routes as $route}
+        {$domain_route = "`$domain`/`$route.url`"}
+        {$domain_hash = md5($domain_route)}
+        {if empty($domain_settings[$domain_hash]) || empty($domain_settings[$domain_hash].status)}
+            {continue}
+        {/if}
+        {$settings = $domain_settings[$domain_hash]}
+
+        <div class="field-group">
+            <h2 class="grey">Поселение: {$domain_route}</h2>
+            <table id="price-table" class="zebra" style="width: auto;">
+                <thead>
+                    <tr>
+                        <th>
+                            Артикул
+                        </th>
+                        {foreach $settings.prices as $price_id => $price_param}
+                            <th>
+                                {$price_param.name|escape}({$product.currency})
+                            </th>
+                        {/foreach}
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach $product.skus as $sku}
+                        <tr>
+                            <td>
+                                {if $sku.name || $sku.sku}
+                                    {$sku.name}{if $sku.sku}({$sku.sku}){/if}
+                                {else}
+                                    Без названия
+                                {/if}
+                            </td>
+                            {foreach $settings.prices  as $price_id => $price_param}
+                                <td>
+                                    {if !empty($prices[$domain_hash][$price_param.category_id][$sku.id])}
+                                        {$value = $prices[$domain_hash][$price_param.category_id][$sku.id]}
+                                    {else}
+                                        {$value = ''}
+                                    {/if}
+                                    <input type="text" name="prices[{$domain_hash}][{$price_param.category_id}][{$sku.id}]" value="{$value}" placeholder="0" class="numerical short bold" />{$product.currency}
+                                </td>
+                            {/foreach}
+                        </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+        </div>
+    {/foreach}
+{/foreach}
+
+<script type="text/javascript" src="{$wa_app_static_url}plugins/price/js/price.js"></script>
+<script type="text/javascript">
+    $.product_price.init({
+        container: '.s-product-form.price',
+        counter: '#s-product-edit-menu li.price span.hint',
+        product_id: {$product.id}
+    });
+</script>
