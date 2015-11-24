@@ -209,33 +209,34 @@ class shopPricePlugin extends shopPlugin {
         }
     }
 
-    public static function prepareProducts($products) {
-        $app_settings_model = new waAppSettingsModel();
-        if ($app_settings_model->get(self::$plugin_id, 'status') && shopPrice::getDomainSetting('status')) {
-            $sku_ids = array();
-            foreach ($products as $product) {
-                $sku_ids[] = $product['sku_id'];
-            }
-
-            $category_ids = self::getUserCategoryId();
-            $domain_hash = shopPrice::getRouteHash();
-            $params = array(
-                'domain_hash' => $domain_hash,
-                'sku_id' => $sku_ids,
-                'category_id' => $category_ids,
-            );
-            $price_model = new shopPricePluginModel();
-            $prices = $price_model->getPriceByParams($params);
-            foreach ($products as &$product) {
-                $sku_id = $product['sku_id'];
-                if (!empty($prices[$sku_id])) {
-                    $product['price'] = $prices[$sku_id]['price'];
+    public static function prepareProducts($products = array()) {
+        if ($products) {
+            $app_settings_model = new waAppSettingsModel();
+            if ($app_settings_model->get(self::$plugin_id, 'status') && shopPrice::getDomainSetting('status')) {
+                $sku_ids = array();
+                foreach ($products as $product) {
+                    $sku_ids[] = $product['sku_id'];
                 }
-            }
-            unset($product);
-        }
 
-        return $products;
+                $category_ids = self::getUserCategoryId();
+                $domain_hash = shopPrice::getRouteHash();
+                $params = array(
+                    'domain_hash' => $domain_hash,
+                    'sku_id' => $sku_ids,
+                    'category_id' => $category_ids,
+                );
+                $price_model = new shopPricePluginModel();
+                $prices = $price_model->getPriceByParams($params);
+                foreach ($products as &$product) {
+                    $sku_id = $product['sku_id'];
+                    if (!empty($prices[$sku_id])) {
+                        $product['price'] = $prices[$sku_id]['price'];
+                    }
+                }
+                unset($product);
+            }
+            return $products;
+        }
     }
 
     public static function fixTotalCart($discount = true) {
