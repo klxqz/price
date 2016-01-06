@@ -2,7 +2,6 @@
 
 $model = new waModel();
 
-
 try {
     $sql = "TRUNCATE TABLE `shop_price`";
     $model->query($sql);
@@ -32,7 +31,7 @@ try {
 
 //удаление первичного ключа
 try {
-    $sql = "`ALTER TABLE shop_price DROP PRIMARY KEY`";
+    $sql = "ALTER TABLE `shop_price` DROP PRIMARY KEY";
     $model->query($sql);
 } catch (waDbException $e) {
     
@@ -47,7 +46,7 @@ try {
 }
 
 try {
-    $sql = "ALTER TABLE `shop_price` ADD `name` VARCHAR( 255 ) NOT NULL ";
+    $sql = "ALTER TABLE `shop_price` ADD `name` VARCHAR( 255 ) NOT NULL";
     $model->query($sql);
 } catch (waDbException $e) {
     
