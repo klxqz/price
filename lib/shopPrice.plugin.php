@@ -83,7 +83,6 @@ class shopPricePlugin extends shopPlugin {
     }
 
     public function frontendProducts(&$params) {
-
         if ($this->getSettings('status') && shopPrice::getDomainSetting('status')) {
             if (!empty($params['products'])) {
                 $params['products'] = $this->prepareProducts($params['products']);
@@ -95,42 +94,46 @@ class shopPricePlugin extends shopPlugin {
     }
 
     public function backendProductSkuSettings($params) {
-        $product = $params['product'];
-        $sku = $params['sku'];
+        if ($this->getSettings('status')) {
+            $product = $params['product'];
+            $sku = $params['sku'];
 
-        $price_model = new shopPricePluginModel();
-        $prices = $price_model->getAll();
-        $_prices = array();
-        foreach ($prices as $price) {
-            $_prices[$price['domain_hash']][] = $price;
+            $price_model = new shopPricePluginModel();
+            $prices = $price_model->getAll();
+            $_prices = array();
+            foreach ($prices as $price) {
+                $_prices[$price['domain_hash']][] = $price;
+            }
+
+            $view = wa()->getView();
+            $view->assign('product', $product);
+            $view->assign('sku', $sku);
+            $view->assign('domains', $this->getDomains());
+            $view->assign('prices', $_prices);
+            $html = $view->fetch('plugins/price/templates/BackendProductSkuSettings.html');
+            return $html;
         }
-
-        $view = wa()->getView();
-        $view->assign('product', $product);
-        $view->assign('sku', $sku);
-        $view->assign('domains', $this->getDomains());
-        $view->assign('prices', $_prices);
-        $html = $view->fetch('plugins/price/templates/BackendProductSkuSettings.html');
-        return $html;
     }
 
     public function productCustomFields() {
-        $domains = $this->getDomains();
+        if ($this->getSettings('status')) {
+            $domains = $this->getDomains();
 
-        $price_model = new shopPricePluginModel();
-        $prices = $price_model->getAll();
+            $price_model = new shopPricePluginModel();
+            $prices = $price_model->getAll();
 
-        $sku_fields = array();
+            $sku_fields = array();
 
-        foreach ($prices as $price) {
-            $field = 'price_plugin_' . $price['id'];
-            $field_name = $price['name'] . " (" . $domains[$price['domain_hash']] . ")";
-            $sku_fields[$field] = $field_name;
+            foreach ($prices as $price) {
+                $field = 'price_plugin_' . $price['id'];
+                $field_name = $price['name'] . " (" . $domains[$price['domain_hash']] . ")";
+                $sku_fields[$field] = $field_name;
+            }
+
+            return array(
+                'sku' => $sku_fields,
+            );
         }
-
-        return array(
-            'sku' => $sku_fields,
-        );
     }
 
     private function getDomains() {
@@ -144,6 +147,19 @@ class shopPricePlugin extends shopPlugin {
             }
         }
         return $domains;
+    }
+
+    public function productSave($params) {
+        if ($this->getSettings('status')) {
+            $sku_model = new shopProductSkusModel();
+            if (!empty($params['data']['skus'])) {
+                foreach ($params['data']['skus'] as $sku) {
+                    if (!empty($sku['price_plugin'])) {
+                        $sku_model->updateById($sku['id'], $sku['price_plugin']);
+                    }
+                }
+            }
+        }
     }
 
 }

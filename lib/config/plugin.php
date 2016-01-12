@@ -12,6 +12,7 @@ return array(
         'frontend_products' => 'frontendProducts',
         'backend_product_sku_settings' => 'backendProductSkuSettings',
         'product_custom_fields' => 'productCustomFields',
+        'product_save' => 'productSave',
     ),
 );
 //EOF
