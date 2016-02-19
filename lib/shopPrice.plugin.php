@@ -73,7 +73,13 @@ class shopPricePlugin extends shopPlugin {
                 $def_currency = wa('shop')->getConfig()->getCurrency(true);
                 foreach ($skus as &$sku) {
                     if (!empty($sku[$price_field]) && $sku[$price_field] > 0) {
-                        $sku['price'] = $sku[$price_field];
+                        if (!empty($sku['unconverted_currency'])) {
+                            $sku['price'] = shop_currency($sku[$price_field], $sku['unconverted_currency'], $def_currency, false);
+                        } elseif (!empty($sku['currency'])) {
+                            $sku['price'] = shop_currency($sku[$price_field], $sku['currency'], $def_currency, false);
+                        } else {
+                            $sku['price'] = $sku[$price_field];
+                        }
                     }
                 }
                 unset($sku);
