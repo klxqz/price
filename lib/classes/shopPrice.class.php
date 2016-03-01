@@ -3,9 +3,14 @@
 class shopPrice {
 
     public static function getRouteHash() {
-        $domain = wa()->getRouting()->getDomain(null, true);
-        $route = wa()->getRouting()->getRoute();
-        return md5($domain . '/' . $route['url']);
+        if ($storefront = waRequest::request('storefront')) {
+            return md5($storefront);
+        } else {
+            $routing = wa()->getRouting();
+            $domain = $routing->getDomain(null, true);
+            $route = $routing->getRoute();
+            return md5($domain . '/' . $route['url']);
+        }
     }
 
     public static function getDomainsSettings() {
@@ -45,8 +50,6 @@ class shopPrice {
     }
 
     public static function saveDomainsSettings($domains_settings) {
-
-
         $app_settings_model = new waAppSettingsModel();
         $routing = wa()->getRouting();
         $domains_routes = $routing->getByApp('shop');

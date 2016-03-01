@@ -8,7 +8,7 @@ class shopPricePlugin extends shopPlugin {
     );
 
     public static function getUserCategoryId($contact_id = null) {
-        if (!$contact_id) {
+        if ($contact_id === null) {
             $contact_id = wa()->getUser()->getId();
         }
         $model = new waModel();
@@ -24,10 +24,10 @@ class shopPricePlugin extends shopPlugin {
         return $category_ids;
     }
 
-    public static function prepareProducts($products = array()) {
+    public static function prepareProducts($products = array(), $contact_id = null) {
         $app_settings_model = new waAppSettingsModel();
         if ($app_settings_model->get(self::$plugin_id, 'status') && shopPrice::getDomainSetting('status')) {
-            $category_ids = self::getUserCategoryId();
+            $category_ids = self::getUserCategoryId($contact_id);
             $domain_hash = shopPrice::getRouteHash();
             $params = array(
                 'domain_hash' => $domain_hash,
@@ -57,10 +57,10 @@ class shopPricePlugin extends shopPlugin {
         return $products;
     }
 
-    public static function prepareSkus($skus = array()) {
+    public static function prepareSkus($skus = array(), $contact_id = null) {
         $app_settings_model = new waAppSettingsModel();
         if ($app_settings_model->get(self::$plugin_id, 'status') && shopPrice::getDomainSetting('status')) {
-            $category_ids = self::getUserCategoryId();
+            $category_ids = self::getUserCategoryId($contact_id);
             $domain_hash = shopPrice::getRouteHash();
             $params = array(
                 'domain_hash' => $domain_hash,
@@ -165,6 +165,16 @@ class shopPricePlugin extends shopPlugin {
                     }
                 }
             }
+        }
+    }
+
+    public function backendOrderEdit($order) {
+        if ($this->getSettings('status')) {
+            $domain_routes = wa()->getRouting()->getByApp('shop');
+            $view = wa()->getView();
+            $view->assign('domain_routes', $domain_routes);
+            $html = $view->fetch('plugins/price/templates/BackendOrderEdit.html');
+            return $html;
         }
     }
 
