@@ -1,3 +1,4 @@
+<script src="{$wa_url}wa-content/js/jquery-ui/jquery.ui.sortable.min.js"></script>
 <style type="text/css">
     .plugin-menu{
         float: right;
@@ -70,17 +71,21 @@
                             Типы цен
                         </div>
                         <div class="value">
-                            <table id="price-table" class="zebra" style="width: auto;">
+                            <table class="price-table zebra" style="width: auto;">
                                 <thead>
-                                <th>Цена</th>
-                                <th>Группа</th>
-                                <th>Удалить</th>
+                                    <tr>
+                                        <th></th>
+                                        <th>Цена</th>
+                                        <th>Группа</th>
+                                        <th>Удалить</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                     {if !empty($prices[$domain_hash])}
                                         {$local_prices = $prices[$domain_hash]}
                                         {foreach $local_prices as $price}
                                             <tr data-id="{$price.id|escape}">
+                                                <td><i class="icon16 sort"></i></td>
                                                 <td>
                                                     <input type="hidden" name="price[id]" value="{$price.id|escape}" />
                                                     <input type="hidden" name="price[domain_hash]" value="{$price.domain_hash|escape}" />
@@ -102,6 +107,7 @@
                                     {/if}
                                 </tbody>
                             </table>
+                            <br/>
                             <a class="inline-link add-row" data-domain-hash="{$domain_hash}" href="#"><i class="icon16 add"></i><b><i>Добавить</i></b></a>
                         </div>
                     </div>
@@ -115,6 +121,7 @@
 {literal}
     <script id="price-tmpl" type="text/x-jquery-tmpl">
         <tr data-id="${id}">
+        <td><i class="icon16 sort"></i></td>
         <td>
         <input type="hidden" name="price[id]" value="${id}" />
         <input type="hidden" name="price[domain_hash]" value="${domain_hash}" />

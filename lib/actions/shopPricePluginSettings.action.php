@@ -2,7 +2,7 @@
 
 class shopPricePluginSettingsAction extends waViewAction {
 
-    public function execute() {
+    public function execute() {         
         $app_settings_model = new waAppSettingsModel();
         $settings = $app_settings_model->get(shopPricePlugin::$plugin_id);
         $ccm = new waContactCategoryModel();

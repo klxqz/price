@@ -1,6 +1,6 @@
 <?php
 
-class shopPricePluginModel extends waModel {
+class shopPricePluginModel extends shopSortableModel {
 
     protected $table = 'shop_price';
 
@@ -11,13 +11,13 @@ class shopPricePluginModel extends waModel {
             if (in_array($param, $enabled_params)) {
                 if (is_array($value) && !empty($value)) {
                     $where[] = "`" . $param . "` IN (" . implode(',', $value) . ")";
-                } else {
+                } elseif (!is_array($value)) {
                     $where[] = "`" . $param . "` = '" . $this->escape($value) . "'";
                 }
             }
         }
         if ($where) {
-            $sql = "SELECT * FROM `" . $this->table . "` WHERE " . implode(' AND ', $where);
+            $sql = "SELECT * FROM `" . $this->table . "` WHERE " . implode(' AND ', $where) . " ORDER BY " . $this->sort;
             if ($all) {
                 return $_prices = $this->query($sql)->fetchAll('id');
             } else {

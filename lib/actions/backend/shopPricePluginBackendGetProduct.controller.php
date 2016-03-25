@@ -25,11 +25,11 @@ class shopPricePluginBackendGetProductController extends shopOrdersGetProductCon
             $this->response['service_ids'] = array_keys($sku['services']);
         } else {
             $product = $this->getProduct($product_id, $order_id);
-            $products = shopPricePlugin::prepareProducts(array($product_id => $product), $customer_id);
+            $products = shopPricePlugin::prepareProducts(array($product_id => $product), $customer_id, $currency);
             if (!empty($products[$product_id])) {
                 $product = $products[$product_id];
             }
-            $product['skus'] = shopPricePlugin::prepareSkus($product['skus'], $customer_id);
+            $product['skus'] = shopPricePlugin::prepareSkus($product['skus'], $customer_id, $currency);
 
             foreach ($product['skus'] as &$sku) {
                 if (isset($sku['price'])) {

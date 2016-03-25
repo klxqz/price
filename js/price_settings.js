@@ -6,11 +6,44 @@
         init: function (options) {
             this.options = options;
             this.initButtons();
+            this.initSort();
+        },
+        initSort: function () {
+            var self = this;
+            $('.price-table').sortable({
+                distance: 5,
+                opacity: 0.75,
+                items: 'tbody tr',
+                axis: 'y',
+                containment: 'parent',
+                update: function (event, ui) {
+                    var id = parseInt($(ui.item).data('id'));
+                    var after_id = $(ui.item).prev().data('id');
+                    if (after_id === undefined) {
+                        after_id = 0;
+                    } else {
+                        after_id = parseInt(after_id);
+                    }
+                    self.sort(id, after_id, $(this));
+                }
+            });
+        },
+        sort: function (id, after_id, $list) {
+            $.post('?plugin=price&action=sort', {
+                id: id,
+                after_id: after_id
+            }, function (response) {
+                if (response.error) {
+                    $list.sortable('cancel');
+                }
+            }, function (response) {
+                $list.sortable('cancel');
+            });
         },
         initButtons: function () {
             var self = this;
             $('.add-row').click(function () {
-                var table = $(this).prev('table#price-table');
+                var table = $(this).closest('.field').find('table.price-table');
                 var data = {
                     categories: self.options.categories,
                     domain_hash: $(this).data('domain-hash'),

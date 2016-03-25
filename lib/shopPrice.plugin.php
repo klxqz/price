@@ -15,16 +15,14 @@ class shopPricePlugin extends shopPlugin {
         $sql = "SELECT * FROM `wa_contact_categories` WHERE `contact_id` = '" . $model->escape($contact_id) . "'";
         $categories = $model->query($sql)->fetchAll();
         $category_ids = array();
+        $category_ids[] = 0;
         foreach ($categories as $category) {
             $category_ids[] = $category['category_id'];
-        }
-        if (empty($category_ids)) {
-            $category_ids[] = 0;
         }
         return $category_ids;
     }
 
-    public static function prepareProducts($products = array(), $contact_id = null) {
+    public static function prepareProducts($products = array(), $contact_id = null, $currency = null) {
         $app_settings_model = new waAppSettingsModel();
         if ($app_settings_model->get(self::$plugin_id, 'status') && shopPrice::getDomainSetting('status')) {
             $category_ids = self::getUserCategoryId($contact_id);
@@ -34,20 +32,23 @@ class shopPricePlugin extends shopPlugin {
                 'category_id' => $category_ids,
             );
             $price_model = new shopPricePluginModel();
-            $price = $price_model->getPriceByParams($params, false);
-
-            if ($price) {
-                $price_field = "price_plugin_{$price['id']}";
-                $def_currency = wa('shop')->getConfig()->getCurrency(true);
+            $prices = $price_model->getPriceByParams($params, true);
+            if ($prices) {
+                if (!$currency) {
+                    $currency = wa('shop')->getConfig()->getCurrency(true);
+                }
                 $sku_model = new shopProductSkusModel();
-
                 foreach ($products as &$product) {
-                    $sku = $sku_model->getById($product['sku_id']);
-                    if (!empty($sku[$price_field]) && $sku[$price_field] > 0) {
-                        if (!empty($product['unconverted_currency'])) {
-                            $product['price'] = shop_currency($sku[$price_field], $product['unconverted_currency'], $def_currency, false);
-                        } elseif (!empty($product['currency'])) {
-                            $product['price'] = shop_currency($sku[$price_field], $product['currency'], $def_currency, false);
+                    foreach ($prices as $price) {
+                        $price_field = "price_plugin_{$price['id']}";
+                        $sku = $sku_model->getById($product['sku_id']);
+                        if (!empty($sku[$price_field]) && $sku[$price_field] > 0) {
+                            if (!empty($product['unconverted_currency']) && !empty($product['currency'])) {
+                                $product['price'] = shop_currency($sku[$price_field], $product['unconverted_currency'], $currency, false);
+                            } else {
+                                $product['price'] = shop_currency($sku[$price_field], $product['currency'], $currency, false);
+                            }
+                            break;
                         }
                     }
                 }
@@ -57,7 +58,7 @@ class shopPricePlugin extends shopPlugin {
         return $products;
     }
 
-    public static function prepareSkus($skus = array(), $contact_id = null) {
+    public static function prepareSkus($skus = array(), $contact_id = null, $currency = null) {
         $app_settings_model = new waAppSettingsModel();
         if ($app_settings_model->get(self::$plugin_id, 'status') && shopPrice::getDomainSetting('status')) {
             $category_ids = self::getUserCategoryId($contact_id);
@@ -67,18 +68,25 @@ class shopPricePlugin extends shopPlugin {
                 'category_id' => $category_ids,
             );
             $price_model = new shopPricePluginModel();
-            $price = $price_model->getPriceByParams($params, false);
-            if ($price) {
-                $price_field = "price_plugin_{$price['id']}";
-                $def_currency = wa('shop')->getConfig()->getCurrency(true);
+            $prices = $price_model->getPriceByParams($params, true);
+
+            if ($prices) {
                 foreach ($skus as &$sku) {
-                    if (!empty($sku[$price_field]) && $sku[$price_field] > 0) {
-                        if (!empty($sku['unconverted_currency'])) {
-                            $sku['price'] = shop_currency($sku[$price_field], $sku['unconverted_currency'], $def_currency, false);
-                        } elseif (!empty($sku['currency'])) {
-                            $sku['price'] = shop_currency($sku[$price_field], $sku['currency'], $def_currency, false);
-                        } else {
-                            $sku['price'] = $sku[$price_field];
+                    foreach ($prices as $price) {
+                        $price_field = "price_plugin_{$price['id']}";
+                        if (!empty($sku[$price_field]) && $sku[$price_field] > 0) {
+                            if (!empty($sku['unconverted_currency']) && !empty($sku['currency'])) {
+                                $sku['price'] = shop_currency($sku[$price_field], $sku['unconverted_currency'], $sku['currency'], false);
+                            } else {
+                                if (!$currency) {
+                                    $sku['price'] = $sku[$price_field];
+                                } else {
+                                    $product_model = new shopProductModel();
+                                    $product = $product_model->getById($sku['product_id']);
+                                    $sku['price'] = shop_currency($sku[$price_field], $product['currency'], $currency, false);
+                                }
+                            }
+                            break;
                         }
                     }
                 }
