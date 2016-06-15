@@ -45,6 +45,11 @@ class shopPricePlugin extends shopPlugin {
                         if (!empty($sku[$price_field]) && $sku[$price_field] > 0) {
                             if (!empty($product['unconverted_currency']) && !empty($product['currency'])) {
                                 $product['price'] = shop_currency($sku[$price_field], $product['unconverted_currency'], $currency, false);
+                                $product['currency'] = $product['unconverted_currency'];
+                                unset($product['frontend_price']);
+                                unset($product['unconverted_currency']);
+                                unset($product['frontend_price']);
+                                unset($product['unconverted_price']);
                             } else {
                                 $product['price'] = shop_currency($sku[$price_field], $product['currency'], $currency, false);
                             }
@@ -55,6 +60,7 @@ class shopPricePlugin extends shopPlugin {
                 unset($product);
             }
         }
+        shopRounding::roundProducts($products);
         return $products;
     }
 
@@ -124,6 +130,7 @@ class shopPricePlugin extends shopPlugin {
             $view->assign('sku', $sku);
             $view->assign('domains', $this->getDomains());
             $view->assign('prices', $_prices);
+            $view->assign('sku_id', $params['sku_id']);
             $html = $view->fetch('plugins/price/templates/BackendProductSkuSettings.html');
             return $html;
         }
