@@ -8,6 +8,12 @@ class shopPricePluginBackendGetProductController extends shopOrdersGetProductCon
         $order_id = $order_id ? $order_id : null;
         $currency = waRequest::get('currency');
 
+        if (!$currency && $order_id) {
+            $order_model = new shopOrderModel();
+            $order = $order_model->getOrder($order_id);
+            $currency = $order['currency'];
+        }
+
         $product_id = waRequest::get('product_id', 0, waRequest::TYPE_INT);
         if (!$product_id) {
             $this->errors[] = _w("Unknown product");

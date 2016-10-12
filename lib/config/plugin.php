@@ -4,7 +4,7 @@ return array(
     'name' => 'Мульти Цены (Оптовые цены)',
     'description' => 'Поддержка различных типов цен для разных групп пользователей',
     'vendor' => 985310,
-    'version' => '2.1.2',
+    'version' => '2.1.3',
     'img' => 'img/price.png',
     'shop_settings' => true,
     'frontend' => true,

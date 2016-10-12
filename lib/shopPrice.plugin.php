@@ -81,9 +81,9 @@ class shopPricePlugin extends shopPlugin {
                     foreach ($prices as $price) {
                         $price_field = "price_plugin_{$price['id']}";
                         if (!empty($sku[$price_field]) && $sku[$price_field] > 0) {
-                            if (!empty($sku['unconverted_currency']) && !empty($sku['currency'])) {
-                                $sku['price'] = shop_currency($sku[$price_field], $sku['unconverted_currency'], $sku['currency'], false);
-                            } else {
+                            //if (!empty($sku['unconverted_currency']) && !empty($sku['currency'])) {
+                            //    $sku['price'] = shop_currency($sku[$price_field], $sku['unconverted_currency'], $sku['currency'], false);
+                            //} else {
                                 if (!$currency) {
                                     $sku['price'] = $sku[$price_field];
                                 } else {
@@ -91,7 +91,7 @@ class shopPricePlugin extends shopPlugin {
                                     $product = $product_model->getById($sku['product_id']);
                                     $sku['price'] = shop_currency($sku[$price_field], $product['currency'], $currency, false);
                                 }
-                            }
+                            //}
                             break;
                         }
                     }
