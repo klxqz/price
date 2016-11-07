@@ -60,7 +60,7 @@ class shopPricePlugin extends shopPlugin {
                 unset($product);
             }
         }
-        shopRounding::roundProducts($products);
+        @shopRounding::roundProducts($products);
         return $products;
     }
 
