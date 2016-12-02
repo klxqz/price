@@ -1,6 +1,6 @@
 <?php
 
-class shopPricePluginBackendSavePriceController extends waJsonController {
+class shopPricePluginSettingsSavePriceController extends waJsonController {
 
     public function execute() {
         try {

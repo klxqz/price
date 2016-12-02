@@ -1,3 +1,8 @@
+{$settings = $plugin->getSettings()}
+<ul class="plugin-menu">
+    <li><a href="http://support.wa-plugins.ru/" target="_blank"><i class="icon16 ss pt hammer"></i>Поддержка разработчика плагина</a></li>
+</ul>
+
 <script src="{$wa_url}wa-content/js/jquery-ui/jquery.ui.sortable.min.js"></script>
 <style type="text/css">
     .plugin-menu{
@@ -21,16 +26,17 @@
         padding: 0.5em;
     }
 </style>
-<h1>Мульти Цены</h1>
+<h1>{$plugin->getName()}</h1>
+<p>
+    Плагин предоставляет возможность задать разные цены на одни и те же товары для отдельных групп покупателей и для отдельных поселений интернет-магазина.<br/>
+    <a href="https://www.webasyst.ru/store/plugin/shop/price/" target="_blank">Подробнее</a> <i class="icon10 new-window"></i>
+</p>
 
 
-<ul class="plugin-menu">
-    <li><a href="mailto:support@wa-plugins.ru"><i class="icon16 ss pt hammer"></i>Поддержка разработчика плагина</a></li>
-</ul>
 
 
 <div class="fields form">
-    <form action="?plugin=price&action=save" method="post" id="plugins-settings-form">
+    <form action="?module=plugins&id=price&action=save" method="post" id="plugins-settings-form">
         {$wa->csrf()}
 
         <div class="field-group">
@@ -45,75 +51,46 @@
                 </div>
             </div>
         </div>
-
-
-        {foreach $domain_routes as $domain => $routes}
-            {foreach $routes as $route}
-                {$domain_route = "`$domain`/`$route.url`"}
-                {$domain_hash = md5($domain_route)}
-                {$local_settings = $domain_settings[$domain_hash]}
-
-
-                <div class="field-group"{if empty($settings.status)} style="display:none"{/if}>
-
-                    <div class="field">
-                        <div class="name bold">
-                            Поселение: {$domain_route}
-                        </div>
-                        <div class="value">
-                            <input type="hidden" name="domains_settings[{$domain_hash}][status]" value="0" >
-                            <input type="checkbox" class="ibutton-status-parent" name="domains_settings[{$domain_hash}][status]" value="1"{if $local_settings.status|default:0} checked{/if}>
-                        </div>
-                    </div>
-
-                    <div class="field"{if empty($local_settings.status)} style="display:none"{/if}>
-                        <div class="name">
-                            Типы цен
-                        </div>
-                        <div class="value">
-                            <table class="price-table zebra" style="width: auto;">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Цена</th>
-                                        <th>Группа</th>
-                                        <th>Удалить</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {if !empty($prices[$domain_hash])}
-                                        {$local_prices = $prices[$domain_hash]}
-                                        {foreach $local_prices as $price}
-                                            <tr data-id="{$price.id|escape}">
-                                                <td><i class="icon16 sort"></i></td>
-                                                <td>
-                                                    <input type="hidden" name="price[id]" value="{$price.id|escape}" />
-                                                    <input type="hidden" name="price[domain_hash]" value="{$price.domain_hash|escape}" />
-                                                    <input type="text" name="price[name]" value="{$price.name|escape}" />
-                                                </td>
-                                                <td>
-                                                    <select name="price[category_id]">
-                                                        {foreach $categories as $category}
-                                                            <option {if $price.category_id == $category.id}selected{/if} value="{$category.id}">{$category.name|escape}</option>
-                                                        {/foreach}
-                                                    </select>
-                                                </td>
-                                                <td  class="min-width">
-                                                    <a class="inline save-row" href="#"><i class="icon16 yes"></i></a>
-                                                    <a class="inline delete-row" href="#"><i class="icon16 no"></i></a>
-                                                </td>
-                                            </tr>
-                                        {/foreach}
-                                    {/if}
-                                </tbody>
-                            </table>
-                            <br/>
-                            <a class="inline-link add-row" data-domain-hash="{$domain_hash}" href="#"><i class="icon16 add"></i><b><i>Добавить</i></b></a>
-                        </div>
-                    </div>
+        <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
+            <div class="field">
+                <div class="name">
+                    Выберите поселение
                 </div>
-            {/foreach}
-        {/foreach}
+                <div class="value">
+                    <select name="route_hash" id="route-selector">
+                        {foreach $route_hashs as $route_url => $route_hash}
+                            <option value="{$route_hash}"{if $route_hash == $settings.route_hash|default:0} selected="selected"{/if}>{$route_url}</option>
+                        {/foreach}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
+            <div class="route-container block double-padded"></div>
+        </div>
+
+        <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
+            <div class="field">
+                <div class="value">
+                    <p class="hint">
+                        Нажмите «Добавить», чтобы создать новую категорию мультицен.<br/>
+                        В поле «Цена» укажите название для создаваемой категории мультицены, например, «Оптовая цена» или «Дилерская цена».<br/>
+                        Поле «Группа» определяет категорию покупателей, для которых данная мультицена будет применяться.                
+                    </p>
+                    <p class="hint">
+                        «Сортировка приоритета» служит, чтобы задать приоритет выбора цен для покупателей, к которым применяются сразу несколько категорий мультицен.<br/>
+                        Мультицена, которая находится выше другой, имеет более высокий приоритет.<br/>
+                        Для изменения порядка следования мультицен перетаскивайте строки в таблице.
+                    </p>
+
+                    <p class="hint">
+                        Внимание! Настройки мультицен привязаны к конкретному поселению, поэтому некоторые технические работы с поселениями или с доменами  могут сбить настройки плагина.<br/>
+                        Например, если проводится настройка плагина на тестовом домене, а после настройки планируется перенос на рабочий домен с другим именем, то из-за разных доменных имен может произойти сбой в настройках плагина.
+                    </p>
+                </div>
+            </div>
+        </div>
     </form>
 </div>
 
@@ -121,10 +98,10 @@
 {literal}
     <script id="price-tmpl" type="text/x-jquery-tmpl">
         <tr data-id="${id}">
-        <td><i class="icon16 sort"></i></td>
+        <td class="align-center"><i class="icon16 sort"></i></td>
         <td>
         <input type="hidden" name="price[id]" value="${id}" />
-        <input type="hidden" name="price[domain_hash]" value="${domain_hash}" />
+        <input type="hidden" name="price[route_hash]" value="${route_hash}" />
         <input type="text" name="price[name]" value="${name}" />
         </td>
         <td>
@@ -134,7 +111,7 @@
         {{/each}}
         </select>
         </td>
-        <td  class="min-width">
+        <td class="align-center">
         <a class="inline save-row" href="#"><i class="icon16 yes"></i></a>
         <a class="inline delete-row" href="#"><i class="icon16 no"></i></a>
         </td>
@@ -143,7 +120,7 @@
 {/literal}
 
 
-<script type="text/javascript" src="{$wa_app_static_url}plugins/price/js/price_settings.js"></script>
+<script type="text/javascript" src="{$wa_app_static_url}plugins/price/js/price_settings.js?v{$plugin->getVersion()}"></script>
 <script type="text/javascript">
     $.price_plugin.init({
         categories: {json_encode($categories)}

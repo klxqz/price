@@ -1,0 +1,57 @@
+<div class="field-group">
+    <div class="field">
+        <div class="name">
+            Статус плагина для поселения
+        </div>
+        <div class="value no-shift s-ibutton-checkbox">
+            <input type="hidden" name="route_settings[status]" value="0">
+            <input type="checkbox" class="ibutton" name="route_settings[status]" value="1"{if $route_settings.status|default:0} checked{/if}>
+            <p class="hint">Чтобы плагин работал для выбранного поселения, необходимо задать «ВКЛ»</p>
+        </div>
+    </div>
+</div>
+
+<div class="field-group">
+    <div class="field">
+        <div class="name">
+            Типы цен
+        </div>
+        <div class="value">
+            <table class="price-table zebra" style="width: auto;">
+                <thead>
+                    <tr>
+                        <th>Сортировка<br/>приоритета</th>
+                        <th>Цена</th>
+                        <th>Группа</th>
+                        <th>Сохранить/Удалить</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach $prices as $price}
+                        <tr data-id="{$price.id|escape}">
+                            <td class="align-center"><i class="icon16 sort"></i></td>
+                            <td>
+                                <input type="hidden" name="price[id]" value="{$price.id|escape}" />
+                                <input type="hidden" name="price[route_hash]" value="{$price.route_hash|escape}" />
+                                <input type="text" name="price[name]" value="{$price.name|escape}" />
+                            </td>
+                            <td>
+                                <select name="price[category_id]">
+                                    {foreach $categories as $category}
+                                        <option {if $price.category_id == $category.id}selected{/if} value="{$category.id}">{$category.name|escape}</option>
+                                    {/foreach}
+                                </select>
+                            </td>
+                            <td class="align-center">
+                                <a class="inline save-row" href="#"><i class="icon16 yes"></i></a>
+                                <a class="inline delete-row" href="#"><i class="icon16 no"></i></a>
+                            </td>
+                        </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+            <br/>
+            <a class="inline-link add-row" href="#"><i class="icon16 add"></i><b><i>Добавить</i></b></a>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,6 @@
 <?php
 
-class shopPricePluginBackendDeletePriceController extends waJsonController {
+class shopPricePluginSettingsDeletePriceController extends waJsonController {
 
     public function execute() {
         try {

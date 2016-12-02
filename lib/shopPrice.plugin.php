@@ -3,9 +3,20 @@
 class shopPricePlugin extends shopPlugin {
 
     public static $plugin_id = array('shop', 'price');
-    public static $default_settings = array(
-        'status' => 1,
-    );
+
+    public function saveSettings($settings = array()) {
+        $route_hash = waRequest::post('route_hash');
+        $route_settings = waRequest::post('route_settings');
+
+        if ($routes = $this->getSettings('routes')) {
+            $settings['routes'] = $routes;
+        } else {
+            $settings['routes'] = array();
+        }
+        $settings['routes'][$route_hash] = $route_settings;
+        $settings['route_hash'] = $route_hash;
+        parent::saveSettings($settings);
+    }
 
     public static function getUserCategoryId($contact_id = null) {
         if ($contact_id === null) {
@@ -22,13 +33,13 @@ class shopPricePlugin extends shopPlugin {
         return $category_ids;
     }
 
-    public static function prepareProducts($products = array(), $contact_id = null, $currency = null) {
+    public static function prepareProducts($products = array(), $contact_id = null, $currency = null, $storefront = null) {
         $app_settings_model = new waAppSettingsModel();
-        if ($app_settings_model->get(self::$plugin_id, 'status') && shopPrice::getDomainSetting('status')) {
+        $route_hash = shopPriceRouteHelper::getRouteHash($storefront);
+        if ($app_settings_model->get(self::$plugin_id, 'status') && shopPriceRouteHelper::getRouteSettings($route_hash, 'status')) {
             $category_ids = self::getUserCategoryId($contact_id);
-            $domain_hash = shopPrice::getRouteHash();
             $params = array(
-                'domain_hash' => $domain_hash,
+                'route_hash' => $route_hash,
                 'category_id' => $category_ids,
             );
             $price_model = new shopPricePluginModel();
@@ -43,6 +54,9 @@ class shopPricePlugin extends shopPlugin {
                         $price_field = "price_plugin_{$price['id']}";
                         $sku = $sku_model->getById($product['sku_id']);
                         if (!empty($sku[$price_field]) && $sku[$price_field] > 0) {
+                            if ($product['compare_price'] > 0 && $product['compare_price'] < $sku[$price_field]) {
+                                $product['compare_price'] = 0;
+                            }
                             if (!empty($product['unconverted_currency']) && !empty($product['currency'])) {
                                 $product['price'] = shop_currency($sku[$price_field], $product['unconverted_currency'], $currency, false);
                                 $product['currency'] = $product['unconverted_currency'];
@@ -64,13 +78,13 @@ class shopPricePlugin extends shopPlugin {
         return $products;
     }
 
-    public static function prepareSkus($skus = array(), $contact_id = null, $currency = null) {
+    public static function prepareSkus($skus = array(), $contact_id = null, $currency = null, $storefront = null) {
         $app_settings_model = new waAppSettingsModel();
-        if ($app_settings_model->get(self::$plugin_id, 'status') && shopPrice::getDomainSetting('status')) {
+        $route_hash = shopPriceRouteHelper::getRouteHash($storefront);
+        if ($app_settings_model->get(self::$plugin_id, 'status') && shopPriceRouteHelper::getRouteSettings($route_hash, 'status')) {
             $category_ids = self::getUserCategoryId($contact_id);
-            $domain_hash = shopPrice::getRouteHash();
             $params = array(
-                'domain_hash' => $domain_hash,
+                'route_hash' => $route_hash,
                 'category_id' => $category_ids,
             );
             $price_model = new shopPricePluginModel();
@@ -81,9 +95,15 @@ class shopPricePlugin extends shopPlugin {
                     foreach ($prices as $price) {
                         $price_field = "price_plugin_{$price['id']}";
                         if (!empty($sku[$price_field]) && $sku[$price_field] > 0) {
-                            //if (!empty($sku['unconverted_currency']) && !empty($sku['currency'])) {
-                            //    $sku['price'] = shop_currency($sku[$price_field], $sku['unconverted_currency'], $sku['currency'], false);
-                            //} else {
+                            if ($sku['compare_price'] > 0 && $sku['compare_price'] < $sku['price']) {
+                                $sku['compare_price'] = 0;
+                            }
+
+                            if (!empty($sku['unconverted_currency']) && !empty($sku['currency'])) {
+                                $product_model = new shopProductModel();
+                                $product = $product_model->getById($sku['product_id']);
+                                $sku['price'] = shop_currency($sku[$price_field], $sku['unconverted_currency'], $sku['currency'], false);
+                            } else {
                                 if (!$currency) {
                                     $sku['price'] = $sku[$price_field];
                                 } else {
@@ -91,7 +111,7 @@ class shopPricePlugin extends shopPlugin {
                                     $product = $product_model->getById($sku['product_id']);
                                     $sku['price'] = shop_currency($sku[$price_field], $product['currency'], $currency, false);
                                 }
-                            //}
+                            }
                             break;
                         }
                     }
@@ -103,7 +123,7 @@ class shopPricePlugin extends shopPlugin {
     }
 
     public function frontendProducts(&$params) {
-        if ($this->getSettings('status') && shopPrice::getDomainSetting('status')) {
+        if ($this->getSettings('status')) {
             if (!empty($params['products'])) {
                 $params['products'] = $this->prepareProducts($params['products']);
             }
@@ -122,23 +142,23 @@ class shopPricePlugin extends shopPlugin {
             $prices = $price_model->getAll();
             $_prices = array();
             foreach ($prices as $price) {
-                $_prices[$price['domain_hash']][] = $price;
+                $_prices[$price['route_hash']][] = $price;
             }
 
             $view = wa()->getView();
             $view->assign('product', $product);
             $view->assign('sku', $sku);
-            $view->assign('domains', $this->getDomains());
+            $view->assign('routes', $this->getRoutes());
             $view->assign('prices', $_prices);
             $view->assign('sku_id', $params['sku_id']);
-            $html = $view->fetch('plugins/price/templates/BackendProductSkuSettings.html');
+            $html = $view->fetch('plugins/price/templates/actions/backend/BackendProductSkuSettings.html');
             return $html;
         }
     }
 
     public function productCustomFields() {
         if ($this->getSettings('status')) {
-            $domains = $this->getDomains();
+            $routes = $this->getRoutes();
 
             $price_model = new shopPricePluginModel();
             $prices = $price_model->getAll();
@@ -146,9 +166,11 @@ class shopPricePlugin extends shopPlugin {
             $sku_fields = array();
 
             foreach ($prices as $price) {
-                $field = 'price_plugin_' . $price['id'];
-                $field_name = $price['name'] . " (" . $domains[$price['domain_hash']] . ")";
-                $sku_fields[$field] = $field_name;
+                if (!empty($routes[$price['route_hash']])) {
+                    $field = 'price_plugin_' . $price['id'];
+                    $field_name = $price['name'] . " (" . $routes[$price['route_hash']] . ")";
+                    $sku_fields[$field] = $field_name;
+                }
             }
 
             return array(
@@ -157,17 +179,13 @@ class shopPricePlugin extends shopPlugin {
         }
     }
 
-    private function getDomains() {
-        $domain_routes = wa()->getRouting()->getByApp('shop');
-        $domains = array();
-        foreach ($domain_routes as $domain => $routes) {
-            foreach ($routes as $route) {
-                $domain_route = "{$domain}/{$route['url']}";
-                $domain_hash = md5($domain_route);
-                $domains[$domain_hash] = $domain_route;
-            }
+    private function getRoutes() {
+        $routes = array();
+        $route_hashs = shopPriceRouteHelper::getRouteHashs();
+        foreach ($route_hashs as $route => $route_hash) {
+            $routes[$route_hash] = $route;
         }
-        return $domains;
+        return $routes;
     }
 
     public function productSave($params) {
@@ -185,10 +203,8 @@ class shopPricePlugin extends shopPlugin {
 
     public function backendOrderEdit($order) {
         if ($this->getSettings('status')) {
-            $domain_routes = wa()->getRouting()->getByApp('shop');
             $view = wa()->getView();
-            $view->assign('domain_routes', $domain_routes);
-            $html = $view->fetch('plugins/price/templates/BackendOrderEdit.html');
+            $html = $view->fetch('plugins/price/templates/actions/backend/BackendOrderEdit.html');
             return $html;
         }
     }
