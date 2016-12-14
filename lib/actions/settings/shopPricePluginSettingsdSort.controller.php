@@ -1,6 +1,6 @@
 <?php
 
-class shopPricePluginBackendSortController extends waJsonController {
+class shopPricePluginSettingsSortController extends waJsonController {
 
     public function execute() {
         $price_model = new shopPricePluginModel();
