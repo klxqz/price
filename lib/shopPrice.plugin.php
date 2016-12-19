@@ -48,6 +48,7 @@ class shopPricePlugin extends shopPlugin {
                 if (!$currency) {
                     $currency = wa('shop')->getConfig()->getCurrency(true);
                 }
+                $frontend_currency = wa('shop')->getConfig()->getCurrency(false);
                 $sku_model = new shopProductSkusModel();
                 foreach ($products as &$product) {
                     foreach ($prices as $price) {
@@ -60,14 +61,15 @@ class shopPricePlugin extends shopPlugin {
                             if (wa()->getEnv() == 'backend') {
                                 $product['price'] = shop_currency($sku[$price_field], $product['currency'], $currency, false);
                             } else {
-                                $product['price'] = shop_currency($sku[$price_field], $product['currency'], $currency, false);
+                                $price = $sku[$price_field];
                                 if (!empty($product['unconverted_currency'])) {
-                                    $product['currency'] = $product['unconverted_currency'];
-                                    unset($product['unconverted_currency']);
-                                    $round_products = array($product['id'] => $product);
-                                    @shopRounding::roundProducts($round_products);
-                                    $product = array_pop($round_products);
+                                    $product_currency = $product['unconverted_currency'];
+                                } else {
+                                    $product_currency = $product['currency'];
                                 }
+                                $price = shop_currency($price, $product_currency, $frontend_currency, false);
+                                $price = shopRounding::roundCurrency($price, $frontend_currency);
+                                $product['price'] = shop_currency($price, $frontend_currency, $currency, false);
                             }
                             break;
                         }
