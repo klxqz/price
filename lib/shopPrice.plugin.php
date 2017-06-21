@@ -33,17 +33,21 @@ class shopPricePlugin extends shopPlugin {
         return $category_ids;
     }
 
-    public static function prepareProducts($products = array(), $contact_id = null, $currency = null, $storefront = null) {
+    public static function prepareProducts($products = array(), $contact_id = null, $currency = null, $storefront = null, $price_id = null) {
         $app_settings_model = new waAppSettingsModel();
         $route_hash = shopPriceRouteHelper::getRouteHash($storefront);
-        if ($app_settings_model->get(self::$plugin_id, 'status') && shopPriceRouteHelper::getRouteSettings($route_hash, 'status')) {
-            $category_ids = self::getUserCategoryId($contact_id);
-            $params = array(
-                'route_hash' => $route_hash,
-                'category_id' => $category_ids,
-            );
+        if ($app_settings_model->get(self::$plugin_id, 'status') && (shopPriceRouteHelper::getRouteSettings($route_hash, 'status') || $price_id)) {
             $price_model = new shopPricePluginModel();
-            $prices = $price_model->getPriceByParams($params, true);
+            if ($price_id) {
+                $prices = array($price_model->getById($price_id));
+            } else {
+                $category_ids = self::getUserCategoryId($contact_id);
+                $params = array(
+                    'route_hash' => $route_hash,
+                    'category_id' => $category_ids,
+                );
+                $prices = $price_model->getPriceByParams($params, true);
+            }
             if ($prices) {
                 if (!$currency) {
                     $currency = wa('shop')->getConfig()->getCurrency(true);
@@ -81,17 +85,21 @@ class shopPricePlugin extends shopPlugin {
         return $products;
     }
 
-    public static function prepareSkus($skus = array(), $contact_id = null, $currency = null, $storefront = null) {
+    public static function prepareSkus($skus = array(), $contact_id = null, $currency = null, $storefront = null, $price_id = null) {
         $app_settings_model = new waAppSettingsModel();
         $route_hash = shopPriceRouteHelper::getRouteHash($storefront);
-        if ($app_settings_model->get(self::$plugin_id, 'status') && shopPriceRouteHelper::getRouteSettings($route_hash, 'status')) {
-            $category_ids = self::getUserCategoryId($contact_id);
-            $params = array(
-                'route_hash' => $route_hash,
-                'category_id' => $category_ids,
-            );
+        if ($app_settings_model->get(self::$plugin_id, 'status') && (shopPriceRouteHelper::getRouteSettings($route_hash, 'status') || $price_id)) {
             $price_model = new shopPricePluginModel();
-            $prices = $price_model->getPriceByParams($params, true);
+            if ($price_id) {
+                $prices = array($price_model->getById($price_id));
+            } else {
+                $category_ids = self::getUserCategoryId($contact_id);
+                $params = array(
+                    'route_hash' => $route_hash,
+                    'category_id' => $category_ids,
+                );
+                $prices = $price_model->getPriceByParams($params, true);
+            }
 
             if ($prices) {
                 if (!$currency) {
@@ -207,12 +215,21 @@ class shopPricePlugin extends shopPlugin {
     }
 
     public function backendOrderEdit($order) {
-        if ($this->getSettings('status')) {
-            $plugin_url = $this->getPluginStaticUrl();
-            $version = $this->getVersion();
-            $html = <<<HTML
-<script type="text/javascript" src = "{$plugin_url}js/backend_order_edit.js?v{$version}"></script>
-HTML;
+        if ($this->getSettings('status')) {          
+            $price_model = new shopPricePluginModel();
+            $prices = $price_model->getAll();
+            $_prices = array();
+            foreach ($prices as $price) {
+                $_prices[$price['route_hash']][] = $price;
+            }
+            $view = wa()->getView();
+            $view->assign(array(
+                'plugin_url' => $this->getPluginStaticUrl(),
+                'version' => $this->getVersion(),
+                'prices' => $_prices,
+                'routes' => $this->getRoutes(),
+            ));
+            $html = $view->fetch('plugins/price/templates/actions/backend/BackendOrderEdit.html');
             return $html;
         }
     }
