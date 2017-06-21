@@ -146,6 +146,35 @@ class shopPricePlugin extends shopPlugin {
         }
     }
 
+    public function frontendCategory() {
+        if ($this->getSettings('status')) {
+            // fix prices
+            $view = wa()->getView();
+            $filters = $view->getVars('filters');
+            $products = $view->getVars('products');
+            foreach ($products as $p_id => $p) {
+                if ($p['sku_count'] > 1) {
+                    $product_ids[] = $p_id;
+                }
+            }
+            if ($product_ids) {
+                $tmp = array();
+                foreach ($filters as $fid => $f) {
+                    if ($fid != 'price') {
+                        $fvalues = waRequest::get($f['code']);
+                        if ($fvalues && !isset($fvalues['min']) && !isset($fvalues['max'])) {
+                            $tmp[$fid] = $fvalues;
+                        }
+                    }
+                }
+                if ($tmp) {
+                    $products = $this->prepareProducts($products);
+                    $view->assign('products', $products);
+                }
+            }
+        }
+    }
+
     public function backendProductSkuSettings($params) {
         if ($this->getSettings('status')) {
             $product = $params['product'];
@@ -215,7 +244,7 @@ class shopPricePlugin extends shopPlugin {
     }
 
     public function backendOrderEdit($order) {
-        if ($this->getSettings('status')) {          
+        if ($this->getSettings('status')) {
             $price_model = new shopPricePluginModel();
             $prices = $price_model->getAll();
             $_prices = array();

@@ -4,7 +4,7 @@ return array(
     'name' => 'Мульти Цены (Оптовые цены)',
     'description' => 'Поддержка различных типов цен для разных групп пользователей',
     'vendor' => 985310,
-    'version' => '2.2.1',
+    'version' => '2.2.2',
     'img' => 'img/price.png',
     'shop_settings' => true,
     'frontend' => true,
@@ -14,6 +14,7 @@ return array(
         'product_custom_fields' => 'productCustomFields',
         'product_save' => 'productSave',
         'backend_order_edit' => 'backendOrderEdit',
+        'frontend_category' => 'frontendCategory',
     ),
 );
 //EOF
