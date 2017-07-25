@@ -6,7 +6,7 @@
         init: function (options) {
             this.options = options;
             this.initButtons();
-            this.initRouteSelector();
+            this.initSort();
         },
         initButtons: function () {
             var self = this;
@@ -25,62 +25,115 @@
             });
             $(document).on('click', '.add-row', function () {
                 var table = $(this).closest('.field').find('table.price-table');
-                var data = {
-                    categories: self.options.categories,
-                    route_hash: $('#route-selector').val(),
-                    id: 0,
-                    category_id: 0
+                var tmp_data = {
+                    price: {
+                        id: 0,
+                        name: '',
+                        route_hash: [],
+                        category_id: []
+                    },
+                    route_hashs: self.options.route_hashs,
+                    categories: self.options.categories
                 };
                 if (table.length) {
-                    $('#price-tmpl').tmpl(data).appendTo(table.find('tbody'));
+                    $('#price-tmpl').tmpl(tmp_data).appendTo(table.find('tbody'));
                 }
                 return false;
             });
+            $(document).on('change', '[name="price[route_hash][]"]', function () {
+                var val = $(this).val();
+                if ($(this).is(':checked')) {
+                    if (val == '0') {
+                        $(this).closest('ul').find('[name="price[route_hash][]"][value!=' + val + ']').removeAttr('checked');
+                    } else {
+                        $(this).closest('ul').find('[name="price[route_hash][]"][value=0]').removeAttr('checked');
+                    }
+                }
+            });
+
+            $(document).on('change', '[name="price[category_id][]"]', function () {
+                var val = $(this).val();
+                if ($(this).is(':checked')) {
+                    if (val == '0') {
+                        $(this).closest('ul').find('[name="price[category_id][]"][value!=' + val + ']').removeAttr('checked');
+                    } else {
+                        $(this).closest('ul').find('[name="price[category_id][]"][value=0]').removeAttr('checked');
+                    }
+                }
+            });
+
             $(document).on('click', '.delete-row', function () {
                 if ($(this).closest('tr').data('id')) {
                     if (!confirm("Внимание! При удалении выбранной мультицены будут удалены все мультицены данного типа, установленные для товаров. Продолжить?")) {
                         return false;
                     }
                 }
-                var inputs = $(this).closest('tr').find('input,select');
+                var button = $(this);
+                var inputs = button.closest('tr').find('input,select');
                 inputs.attr('disabled', true);
-                $(this).hide().siblings('a').hide();
-                $(this).after('<i class="icon16 loading"></i>');
-                if ($(this).closest('tr').data('id')) {
+                var loading = $('<i class="icon16 loading"></i>');
+                inputs.attr('disabled', true);
+                button.hide().siblings('a').hide();
+                button.after(loading);
+                if (button.closest('tr').data('id')) {
                     var self = this;
                     $.ajax({
                         url: '?plugin=price&module=settings&action=deletePrice',
                         type: 'POST',
                         data: {
-                            id: $(this).closest('tr').data('id')
+                            id: button.closest('tr').data('id')
                         },
                         success: function (data, textStatus) {
-                            $(self).closest('tr').remove();
+                            button.closest('tr').remove();
+                        }, error: function (jqXHR) {
+                            inputs.removeAttr('disabled');
+                            button.show().siblings('a').show();
+                            loading.remove();
+                            alert(jqXHR.responseText);
                         }
                     });
                 } else {
-                    $(this).closest('tr').remove();
+                    button.closest('tr').remove();
                 }
                 return false;
             });
             $(document).on('click', '.save-row', function () {
-                var button = this;
-                var inputs = $(this).closest('tr').find('input,select');
+                var button = $(this);
+                var inputs = button.closest('tr').find('input,select');
                 var data = inputs.serialize();
+                var loading = $('<i class="icon16 loading"></i>');
                 inputs.attr('disabled', true);
-                $(this).hide().siblings('a').hide();
-                $(this).after('<i class="icon16 loading"></i>');
+                button.hide().siblings('a').hide();
+                button.after(loading);
                 $.ajax({
                     url: '?plugin=price&module=settings&action=savePrice',
                     type: 'POST',
                     data: data,
                     success: function (data, textStatus) {
-                        data.data.price.categories = self.options.categories;
-                        $(button).closest('tr').replaceWith($('#price-tmpl').tmpl(data.data.price));
+                        if (data.status == 'ok') {
+                            var tmp_data = {
+                                price: data.data.price,
+                                categories: self.options.categories,
+                                route_hashs: self.options.route_hashs
+                            };
+                            button.closest('tr').replaceWith($('#price-tmpl').tmpl(tmp_data));
+                        } else {
+                            inputs.removeAttr('disabled');
+                            button.show().siblings('a').show();
+                            loading.remove();
+                            alert(data.errors.join(' '));
+                        }
+                    },
+                    error: function (jqXHR) {
+                        inputs.removeAttr('disabled');
+                        button.show().siblings('a').show();
+                        loading.remove();
+                        alert(jqXHR.responseText);
                     }
                 });
                 return false;
             });
+
         },
         initSort: function () {
             var self = this;
@@ -123,36 +176,6 @@
             }, function (response) {
                 $list.sortable('cancel');
             });
-        },
-        initRouteButtons: function () {
-            $('.route-container .ibutton').iButton({
-                labelOn: "Вкл",
-                labelOff: "Выкл",
-                className: 'mini'
-            }).change(function () {
-                var f = $("#plugins-settings-form");
-                $.post(f.attr('action'), f.serialize());
-            });
-            this.initSort();
-        },
-        initRouteSelector: function () {
-            var self = this;
-            $('#route-selector').change(function () {
-                var $route_selector = $(this);
-                var loading = $('<i class="icon16 loading"></i>');
-                $(this).attr('disabled', true);
-                $(this).after(loading);
-                $('.route-container').find('input,select,textarea').attr('disabled', true);
-                $('.route-container').slideUp('slow');
-                $.get('?plugin=price&module=settings&action=route&route_hash=' + $(this).val(), function (response) {
-                    $('.route-container').html(response);
-                    loading.remove();
-                    $route_selector.removeAttr('disabled');
-                    $('.route-container').slideDown('slow');
-                    self.initRouteButtons();
-                });
-                return false;
-            }).change();
         }
     };
 })(jQuery);

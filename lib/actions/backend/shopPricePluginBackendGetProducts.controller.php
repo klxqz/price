@@ -35,9 +35,13 @@ class shopPricePluginBackendGetProductsController extends shopOrdersGetProductCo
 
         $response = array();
 
-        $products = shopPricePlugin::prepareProducts($products, $customer_id, $currency, $storefront, $price_id);
+        if ($price_id !== 0) {
+            $products = shopPricePlugin::prepareProducts($products, $customer_id, $currency, $storefront, $price_id);
+        }
         foreach ($products as &$product) {
-            $product['skus'] = shopPricePlugin::prepareSkus($product['skus'], $customer_id, $currency, $storefront, $price_id);
+            if ($price_id !== 0) {
+                $product['skus'] = shopPricePlugin::prepareSkus($product['skus'], $customer_id, $currency, $storefront, $price_id);
+            }
             foreach ($product['skus'] as &$sku) {
                 if (isset($sku['price'])) {
                     $sku['price_str'] = wa_currency($sku['price'], $currency);

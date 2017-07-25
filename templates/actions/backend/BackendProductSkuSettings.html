@@ -2,19 +2,15 @@
 <div class="field-group">
     <h3>Мульти Цены</h3> 
     <a href="?action=plugins#/price/" target="_blank">Настройки плагина</a> <i class="icon10 new-window"></i>
-    {foreach $prices as $route_hash =>  $route_prices}
-        {if !empty($routes[$route_hash])}
-            {foreach $route_prices as $price}
-                <div class="field">
-                    <div class="name"><strong>{$price.name}</strong> ({$routes[$route_hash]})</div>
-                    <div class="value">
-                        {$field = "price_plugin_`$price.id`"}
-                        <input type="text" name="skus[{$sku_id}][{$field}]" value="{(float)$sku[$field]|default:''}" placeholder="0" class="short numerical">
-                        <span class="s-product-currency-readonly">{$product.currency}</span>
-                    </div>
-                </div>
-            {/foreach}
-        {/if}
+    {foreach $prices as $price}
+        <div class="field">
+            <div class="name"><strong>{$price.name}</strong></div>
+            <div class="value">
+                {$field = "price_plugin_`$price.id`"}
+                <input type="text" name="skus[{$sku_id}][{$field}]" value="{(float)$sku[$field]|default:''}" placeholder="0" class="short numerical">
+                <span class="s-product-currency-readonly">{$product.currency}</span>
+            </div>
+        </div>
     {/foreach}
 </div>
 <div class="clear-both"></div>

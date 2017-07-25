@@ -233,12 +233,8 @@
 <div id="price-buttons" style="display: none">
     <input type="hidden" name="price_id" value="" />
     <a href="#" class="button grey" data-price-id="0">По умолчанию</a>
-    {foreach $prices as $route_hash =>  $route_prices}
-        {if !empty($routes[$route_hash])}
-            {foreach $route_prices as $price}
-                <a href="#" class="button grey" data-price-id="{$price.id}">{$price.name} ({$routes[$route_hash]})</a>
-            {/foreach}
-        {/if}
+    {foreach $prices as $price}
+        <a href="#" class="button grey" data-price-id="{$price.id}">{$price.name}</a>
     {/foreach}
 
 </div>

@@ -47,27 +47,79 @@
                 <div class="value no-shift s-ibutton-checkbox">
                     <input type="hidden" name="shop_price[status]" value="0">
                     <input type="checkbox" id="ibutton-status" name="shop_price[status]" value="1"{if $settings.status|default:0} checked{/if}>
-
                 </div>
             </div>
         </div>
         <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
             <div class="field">
                 <div class="name">
-                    Выберите поселение
+                    Типы цен
                 </div>
                 <div class="value">
-                    <select name="route_hash" id="route-selector">
-                        {foreach $route_hashs as $route_url => $route_hash}
-                            <option value="{$route_hash}"{if $route_hash == $settings.route_hash|default:0} selected="selected"{/if}>{$route_url}</option>
-                        {/foreach}
-                    </select>
+                    <table class="price-table zebra" style="width: auto;">
+                        <thead>
+                            <tr>
+                                <th>Сортировка<br/>приоритета</th>
+                                <th>Наименование Мульти цены</th>
+                                <th>Витрина</th>
+                                <th>Группа покупателей</th>
+                                <th>Сохранить/Удалить</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach $prices as $price}
+                                <tr data-id="{$price.id|escape}">
+                                    <td class="align-center"><i title="Сортировка приоритета" class="icon16 sort"></i></td>
+                                    <td>
+                                        <input type="hidden" name="price[id]" value="{$price.id|escape}" />
+                                        <input class="long" type="text" name="price[name]" value="{$price.name|escape}" />
+                                    </td>
+                                    <td>
+                                        <ul class="menu-v">
+                                            {foreach $route_hashs as $route_hash}
+                                                <li>
+                                                    <input type="checkbox" name="price[route_hash][]" value="{$route_hash.route_hash}"{if !empty($price.route_hash[$route_hash.route_hash])} checked{/if}/>
+                                                    {if $route_hash.route_hash}
+                                                        <a target="_blank" class="inline" href="{$route_hash.url}">
+                                                            {$route_hash.storefront} <i class="icon10 new-window"></i>
+                                                        </a>
+                                                    {else}
+                                                        {$route_hash.storefront}
+                                                    {/if}
+                                                </li>
+                                            {/foreach}
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="menu-v">
+                                            {foreach $categories as $category}
+                                                <li>
+                                                    <i class="icon16 {$category.icon}"></i> <input type="checkbox" name="price[category_id][]" value="{$category.id}"{if !empty($price.category_id[$category.id])} checked{/if}/>
+                                                    {if $category.id}
+                                                        <a target="_blank" class="inline" href="?action=customers#/category/{$category.id}">
+                                                            {$category.name} <i class="icon10 new-window"></i>
+                                                        </a>
+                                                    {else}
+                                                        {$category.name} 
+                                                    {/if}
+                                                </li>
+                                            {/foreach}
+                                        </ul>
+                                    </td>
+                                    <td class="align-center">
+                                        <a class="inline save-row" href="#" title="Сохранить"><i class="icon16 yes"></i></a>
+                                        <a class="inline delete-row" href="#" title="Удалить"><i class="icon16 no"></i></a>
+                                    </td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                    <br/>
+                    <a class="inline-link add-row" href="#"><i class="icon16 add"></i><b><i>Добавить</i></b></a>
+                    <a class="inline-link" target="_blank" href="?action=customers"><i class="icon16 contact"></i><b><i>Настройки покупателей</i></b></a>
+                    <a class="inline-link" target="_blank" href="{$wa_backend_url}site/#/routing/"><i class="icon16 split"></i><b><i>Настройки витрин</i></b></a>
                 </div>
             </div>
-        </div>
-
-        <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
-            <div class="route-container block double-padded"></div>
         </div>
 
         <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
@@ -75,18 +127,13 @@
                 <div class="value">
                     <p class="hint">
                         Нажмите «Добавить», чтобы создать новую категорию мультицен.<br/>
-                        В поле «Цена» укажите название для создаваемой категории мультицены, например, «Оптовая цена» или «Дилерская цена».<br/>
-                        Поле «Группа» определяет категорию покупателей, для которых данная мультицена будет применяться.                
+                        В поле «Наименование Мульти цены» укажите название для создаваемой категории мультицены, например, «Оптовая цена» или «Дилерская цена».<br/>
+                        Поле «Группа покупателей» определяет категорию покупателей, для которых данная мультицена будет применяться.                
                     </p>
                     <p class="hint">
                         «Сортировка приоритета» служит, чтобы задать приоритет выбора цен для покупателей, к которым применяются сразу несколько категорий мультицен.<br/>
                         Мультицена, которая находится выше другой, имеет более высокий приоритет.<br/>
                         Для изменения порядка следования мультицен перетаскивайте строки в таблице.
-                    </p>
-
-                    <p class="hint">
-                        Внимание! Настройки мультицен привязаны к конкретному поселению, поэтому некоторые технические работы с поселениями или с доменами  могут сбить настройки плагина.<br/>
-                        Например, если проводится настройка плагина на тестовом домене, а после настройки планируется перенос на рабочий домен с другим именем, то из-за разных доменных имен может произойти сбой в настройках плагина.
                     </p>
                 </div>
             </div>
@@ -97,19 +144,40 @@
 <script type="text/javascript" src="{$wa_url}wa-content/js/jquery-plugins/jquery.tmpl.min.js"></script>
 {literal}
     <script id="price-tmpl" type="text/x-jquery-tmpl">
-        <tr data-id="${id}">
+        <tr data-id="${price.id}">
         <td class="align-center"><i class="icon16 sort"></i></td>
         <td>
-        <input type="hidden" name="price[id]" value="${id}" />
-        <input type="hidden" name="price[route_hash]" value="${route_hash}" />
-        <input class="long" type="text" name="price[name]" value="${name}" />
+        <input type="hidden" name="price[id]" value="${price.id}" />
+        <input class="long" type="text" name="price[name]" value="${price.name}" />
         </td>
         <td>
-        <select name="price[category_id]">
-        {{each categories}}
-        <option{{if (category_id == $value.id)}} selected{{/if}} value="${$value.id}">${$value.name}</option>
+        <ul class="menu-v">
+        {{each route_hashs}}
+        <li>
+        <input type="checkbox" name="price[route_hash][]" value="${$value.route_hash}"{{if price.route_hash[$value.route_hash]}} checked{{/if}}/>
+        <a target="_blank" class="inline" href="${$value.url}">
+        ${$value.storefront} <i class="icon10 new-window"></i>
+        </a>
+        </li>
         {{/each}}
-        </select>
+        </ul>
+        </td>
+        <td>
+        <ul class="menu-v">
+        {{each categories}}
+        <li>
+        <i class="icon16 ${$value.icon}"></i>
+        <input type="checkbox" name="price[category_id][]" value="${$value.id}"{{if price.category_id[$value.id]}} checked{{/if}}/>
+        {{if $value.id}}
+        <a target="_blank" class="inline" href="?action=customers#/category/${$value.id}">
+        ${$value.name} <i class="icon10 new-window"></i>
+        </a>
+        {{else}}
+        ${$value.name}
+        {{/if}}
+        </li>
+        {{/each}}
+        </ul>
         </td>
         <td class="align-center">
         <a class="inline save-row" href="#"><i class="icon16 yes"></i></a>
@@ -122,8 +190,9 @@
 
 <script type="text/javascript" src="{$wa_app_static_url}plugins/price/js/price_settings.js?v{$plugin->getVersion()}"></script>
 <script type="text/javascript">
-    $.price_plugin.init({
-        categories: {json_encode($categories)}
-    });
+$.price_plugin.init({
+    route_hashs: {json_encode($route_hashs)},
+    categories: {json_encode($categories)}
+});
 </script>
 
