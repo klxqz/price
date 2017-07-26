@@ -201,7 +201,7 @@ class shopPricePlugin extends shopPlugin {
     }
 
     public function productSave($params) {
-        if ($this->getSettings('status')) {
+        if (!$this->getSettings('status')) {
             return;
         }
         $sku_model = new shopProductSkusModel();
