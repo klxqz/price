@@ -41,7 +41,9 @@ class shopPricePlugin extends shopPlugin {
                     $price_field = "price_plugin_{$price['id']}";
                     $sku = $sku_model->getById($product['sku_id']);
                     if (!empty($sku[$price_field]) && $sku[$price_field] > 0) {
-                        if ($product['compare_price'] > 0 && $product['compare_price'] < $sku[$price_field]) {
+                        if (wa()->getPlugin('price')->getSettings('set_compare_price')) {
+                            $product['compare_price'] = $product['price'];
+                        } elseif ($product['compare_price'] > 0 && $product['compare_price'] < $sku[$price_field]) {
                             $product['compare_price'] = 0;
                         }
                         if (wa()->getEnv() == 'backend') {
@@ -97,6 +99,9 @@ class shopPricePlugin extends shopPlugin {
                         if (wa()->getEnv() == 'backend') {
                             $sku['price'] = shop_currency($sku[$price_field], $product['currency'], $currency, false);
                         } else {
+                            if (wa()->getPlugin('price')->getSettings('set_compare_price')) {
+                                $sku['compare_price'] = shop_currency($sku['price'], $currency, $product['currency'], false);
+                            }
                             $sku['price'] = $sku[$price_field];
                             if (!empty($sku['unconverted_currency'])) {
                                 unset($sku['unconverted_currency']);

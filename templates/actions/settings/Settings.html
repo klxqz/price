@@ -25,6 +25,12 @@
         overflow: auto;
         padding: 0.5em;
     }
+    .short-scroll {
+        width: 250px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        max-height: 150px;
+    }
 </style>
 <h1>{$plugin->getName()}</h1>
 <p>
@@ -53,6 +59,18 @@
         <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
             <div class="field">
                 <div class="name">
+                    Установка зачеркнутой цены
+                </div>
+                <div class="value">
+                    <input type="hidden" name="shop_price[set_compare_price]" value="0">
+                    <input type="checkbox" name="shop_price[set_compare_price]" value="1"{if $settings.set_compare_price|default:0} checked{/if}>
+                    <p class="hint">Если для покупателя доступна оптовая цена, то базовая цена будет отображаться как зачеркнутая</p>
+                </div>
+            </div>
+        </div>
+        <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
+            <div class="field">
+                <div class="name">
                     Типы цен
                 </div>
                 <div class="value">
@@ -75,36 +93,40 @@
                                         <input class="long" type="text" name="price[name]" value="{$price.name|escape}" />
                                     </td>
                                     <td>
-                                        <ul class="menu-v">
-                                            {foreach $route_hashs as $route_hash}
-                                                <li>
-                                                    <input type="checkbox" name="price[route_hash][]" value="{$route_hash.route_hash}"{if !empty($price.route_hash[$route_hash.route_hash])} checked{/if}/>
-                                                    {if $route_hash.route_hash}
-                                                        <a target="_blank" class="inline" href="{$route_hash.url}">
-                                                            {$route_hash.storefront} <i class="icon10 new-window"></i>
-                                                        </a>
-                                                    {else}
-                                                        {$route_hash.storefront}
-                                                    {/if}
-                                                </li>
-                                            {/foreach}
-                                        </ul>
+                                        <div class="short-scroll">
+                                            <ul class="menu-v">
+                                                {foreach $route_hashs as $route_hash}
+                                                    <li>
+                                                        <input type="checkbox" name="price[route_hash][]" value="{$route_hash.route_hash}"{if !empty($price.route_hash[$route_hash.route_hash])} checked{/if}/>
+                                                        {if $route_hash.route_hash}
+                                                            <a target="_blank" class="inline" href="{$route_hash.url}">
+                                                                {$route_hash.storefront} <i class="icon10 new-window"></i>
+                                                            </a>
+                                                        {else}
+                                                            {$route_hash.storefront}
+                                                        {/if}
+                                                    </li>
+                                                {/foreach}
+                                            </ul>
+                                        </div>
                                     </td>
                                     <td>
-                                        <ul class="menu-v">
-                                            {foreach $categories as $category}
-                                                <li>
-                                                    <i class="icon16 {$category.icon}"></i> <input type="checkbox" name="price[category_id][]" value="{$category.id}"{if !empty($price.category_id[$category.id])} checked{/if}/>
-                                                    {if $category.id}
-                                                        <a target="_blank" class="inline" href="?action=customers#/category/{$category.id}">
-                                                            {$category.name} <i class="icon10 new-window"></i>
-                                                        </a>
-                                                    {else}
-                                                        {$category.name} 
-                                                    {/if}
-                                                </li>
-                                            {/foreach}
-                                        </ul>
+                                        <div class="short-scroll">
+                                            <ul class="menu-v">
+                                                {foreach $categories as $category}
+                                                    <li>
+                                                        <i class="icon16 {$category.icon}"></i> <input type="checkbox" name="price[category_id][]" value="{$category.id}"{if !empty($price.category_id[$category.id])} checked{/if}/>
+                                                        {if $category.id}
+                                                            <a target="_blank" class="inline" href="?action=customers#/category/{$category.id}">
+                                                                {$category.name} <i class="icon10 new-window"></i>
+                                                            </a>
+                                                        {else}
+                                                            {$category.name} 
+                                                        {/if}
+                                                    </li>
+                                                {/foreach}
+                                            </ul>
+                                        </div>
                                     </td>
                                     <td class="align-center">
                                         <a class="inline save-row" href="#" title="Сохранить"><i class="icon16 yes"></i></a>
@@ -190,9 +212,9 @@
 
 <script type="text/javascript" src="{$wa_app_static_url}plugins/price/js/price_settings.js?v{$plugin->getVersion()}"></script>
 <script type="text/javascript">
-$.price_plugin.init({
-    route_hashs: {json_encode($route_hashs)},
-    categories: {json_encode($categories)}
-});
+    $.price_plugin.init({
+        route_hashs: {json_encode($route_hashs)},
+        categories: {json_encode($categories)}
+    });
 </script>
 

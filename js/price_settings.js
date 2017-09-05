@@ -20,6 +20,8 @@
                 } else {
                     self.closest('.field-group').siblings().hide(200);
                 }
+            });
+            $('[name*=shop_price]').change(function () {
                 var f = $("#plugins-settings-form");
                 $.post(f.attr('action'), f.serialize());
             });
