@@ -30,6 +30,8 @@ class shopPricePluginModel extends shopSortableModel {
             $params_model->deleteByField('price_id', $price['id']);
             $sql = "ALTER TABLE `shop_product_skus` DROP `price_plugin_" . $this->escape($price['id']) . "`";
             $this->query($sql);
+            $sql = "ALTER TABLE `shop_product_skus` DROP `price_plugin_type_" . $this->escape($price['id']) . "`";
+            $this->query($sql);
         }
         return parent::deleteByField($field, $value);
     }
@@ -39,7 +41,9 @@ class shopPricePluginModel extends shopSortableModel {
         $id = parent::insert($data, $type);
         $this->insertParams($id, $data['route_hash'], $data['category_id']);
 
-        $sql = "ALTER TABLE `shop_product_skus` ADD `price_plugin_{$id}` DECIMAL( 15, 4 ) NOT NULL";
+        $sql = "ALTER TABLE `shop_product_skus` ADD `price_plugin_{$id}` DECIMAL(15,4) NOT NULL DEFAULT '0.0000';";
+        $this->query($sql);
+        $sql = "ALTER TABLE `shop_product_skus` ADD `price_plugin_type_{$id}` ENUM( '', '%', '+' ) NOT NULL DEFAULT '';";
         $this->query($sql);
 
         return $id;
