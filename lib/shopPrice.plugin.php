@@ -41,7 +41,7 @@ class shopPricePlugin extends shopPlugin {
                     $price_field = "price_plugin_{$price['id']}";
                     $price_field_type = "price_plugin_type_{$price['id']}";
                     $sku = $sku_model->getById($product['sku_id']);
-                    if (!empty($sku[$price_field])) {
+                    if (isset($sku[$price_field]) && $sku[$price_field] != 0) {
                         if (wa()->getPlugin('price')->getSettings('set_compare_price')) {
                             $product['compare_price'] = $product['price'];
                         } elseif ($product['compare_price'] > 0 && $product['compare_price'] < $sku[$price_field]) {
@@ -100,7 +100,7 @@ class shopPricePlugin extends shopPlugin {
                 foreach ($prices as $price) {
                     $price_field = "price_plugin_{$price['id']}";
                     $price_field_type = "price_plugin_type_{$price['id']}";
-                    if (!empty($sku[$price_field])) {
+                    if (isset($sku[$price_field]) && $sku[$price_field] != 0) {
                         if ($sku['compare_price'] > 0 && $sku['compare_price'] < $sku['price']) {
                             $sku['compare_price'] = 0;
                         }
