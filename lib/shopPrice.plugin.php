@@ -214,7 +214,7 @@ class shopPricePlugin extends shopPlugin {
                     $product_ids[] = $p_id;
                 }
             }
-            if ($product_ids) {
+            if ($product_ids && $filters) {
                 $tmp = array();
                 foreach ($filters as $fid => $f) {
                     if ($fid != 'price') {
