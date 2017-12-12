@@ -149,37 +149,86 @@ class shopPricePlugin extends shopPlugin {
         }
     }
 
-    public function frontendCategory() {
+    public function frontendCategory($category) {
         if (!$this->getSettings('status')) {
             return;
         }
-        // fix prices
+
         $view = wa()->getView();
         $filters = $view->getVars('filters');
-        if (!$filters) {
-            return;
-        }
-        $products = $view->getVars('products');
-        foreach ($products as $p_id => $p) {
-            if ($p['sku_count'] > 1) {
-                $product_ids[] = $p_id;
-            }
-        }
-        if (!$product_ids) {
-            return;
-        }
-        $tmp = array();
-        foreach ($filters as $fid => $f) {
-            if ($fid != 'price') {
-                $fvalues = waRequest::get($f['code']);
-                if ($fvalues && !isset($fvalues['min']) && !isset($fvalues['max'])) {
-                    $tmp[$fid] = $fvalues;
+
+        // Исправление минимальной максимальной цены в фильтре товаров
+        if (!empty($filters['price'])) {
+            $min = array(
+                $filters['price']['min']
+            );
+            $max = array(
+                $filters['price']['max']
+            );
+
+            $route_hash = shopPriceRouteHelper::getRouteHash();
+            $category_ids = self::getUserCategoryId();
+            $price_model = new shopPricePluginModel();
+            $prices = $price_model->getPrices($route_hash, $category_ids);
+
+            $currency = wa('shop')->getConfig()->getCurrency(true);
+            $frontend_currency = wa('shop')->getConfig()->getCurrency(false);
+
+            foreach ($prices as $price) {
+                foreach (array('', '+', '%') as $type) {
+                    $collection = new shopProductsCollection('category/' . $category['id']);
+                    $skus_alias = $collection->addJoin('shop_product_skus', ':table.product_id = p.id', ":table.price_plugin_type_{$price['id']} = '{$type}'");
+                    $currency_alias = $collection->addJoin('shop_currency', ':table.code = p.currency');
+
+                    if ($type) {
+                        $field = "({$skus_alias}.price {$type} {$skus_alias}.price_plugin_{$price['id']}) * {$currency_alias}.rate";
+                    } else {
+                        $field = "({$skus_alias}.price_plugin_{$price['id']}) * {$currency_alias}.rate";
+                    }
+
+                    $collection->addWhere("{$field} != 0");
+                    $sql = $collection->getSQL();
+                    $sql = "SELECT MIN(" . $field . ") min, MAX(" . $field . ") max " . $sql;
+                    $model = new waModel();
+                    $data = $model->query($sql)->fetch();
+
+                    if (isset($data['min'])) {
+                        $min[] = shop_currency($data['min'], $currency, $frontend_currency, false);
+                    }
+                    if (isset($data['max'])) {
+                        $max[] = shop_currency($data['max'], $currency, $frontend_currency, false);
+                    }
                 }
             }
+
+            $filters['price']['min'] = min($min);
+            $filters['price']['max'] = max($max);
+            $view->assign('filters', $filters);
         }
-        if ($tmp) {
-            $products = $this->prepareProducts($products);
-            $view->assign('products', $products);
+
+        $products = $view->getVars('products');
+        //Исправление цены после фильтрации shopFrontendCategoryAction::filterListSkus
+        if ($products) {
+            foreach ($products as $p_id => $p) {
+                if ($p['sku_count'] > 1) {
+                    $product_ids[] = $p_id;
+                }
+            }
+            if ($product_ids) {
+                $tmp = array();
+                foreach ($filters as $fid => $f) {
+                    if ($fid != 'price') {
+                        $fvalues = waRequest::get($f['code']);
+                        if ($fvalues && !isset($fvalues['min']) && !isset($fvalues['max'])) {
+                            $tmp[$fid] = $fvalues;
+                        }
+                    }
+                }
+                if ($tmp) {
+                    $products = $this->prepareProducts($products);
+                    $view->assign('products', $products);
+                }
+            }
         }
     }
 
@@ -215,7 +264,7 @@ class shopPricePlugin extends shopPlugin {
         foreach ($prices as $price) {
             $field = 'price_plugin_' . $price['id'];
             $sku_fields[$field] = $price['name'];
-            $field_type = 'price_plugin_type' . $price['id'];
+            $field_type = 'price_plugin_type_' . $price['id'];
             $sku_fields[$field_type] = $price['name'] . ' (Тип цены)';
         }
 
