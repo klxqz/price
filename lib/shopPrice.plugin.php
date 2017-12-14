@@ -16,6 +16,46 @@ class shopPricePlugin extends shopPlugin {
         }
         return $category_ids;
     }
+    
+    public static function shop_currency($n, $in_currency = null, $out_currency = null, $format = true) {
+        /**
+         * @var shopConfig $config
+         */
+        $config = wa('shop')->getConfig();
+
+        // primary currency
+        $primary = $config->getCurrency(true);
+
+        // current currency (in backend - it's primary, in frontend - currency of storefront)
+        $currency = $config->getCurrency(false);
+
+        if (!$in_currency) {
+            $in_currency = $primary;
+        }
+        if ($in_currency === true || $in_currency === 1) {
+            $in_currency = $currency;
+        }
+        if (!$out_currency) {
+            $out_currency = $currency;
+        }
+
+        if ($in_currency != $out_currency) {
+            $currencies = wa('shop')->getConfig()->getCurrencies(array($in_currency, $out_currency));
+            if (isset($currencies[$in_currency]) && $in_currency != $primary) {
+                $n = $n * $currencies[$in_currency]['rate'];
+            }
+            if ($out_currency != $primary) {
+                $n = $n / ifempty($currencies[$out_currency]['rate'], 1.0);
+            }
+        }
+        if ($format === 'h') {
+            return wa_currency_html($n, $out_currency);
+        } elseif ($format) {
+            return wa_currency($n, $out_currency);
+        } else {
+            return str_replace(',', '.', $n);
+        }
+    }
 
     public static function prepareProducts($products = array(), $contact_id = null, $currency = null, $storefront = null, $price_id = null) {
         if (!wa()->getPlugin('price')->getSettings('status') && !$price_id) {
@@ -63,9 +103,9 @@ class shopPricePlugin extends shopPlugin {
                             } else {
                                 $product_currency = $product['currency'];
                             }
-                            $price_value = shop_currency($price_value, $product_currency, $frontend_currency, false);
+                            $price_value = self::shop_currency($price_value, $product_currency, $frontend_currency, false);
                             $price_value = shopRounding::roundCurrency($price_value, $frontend_currency);
-                            $product['price'] = shop_currency($price_value, $frontend_currency, $currency, false);
+                            $product['price'] = self::shop_currency($price_value, $frontend_currency, $currency, false);
                         }
                         break;
                     }
