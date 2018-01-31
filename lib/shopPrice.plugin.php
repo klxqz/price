@@ -16,7 +16,7 @@ class shopPricePlugin extends shopPlugin {
         }
         return $category_ids;
     }
-    
+
     public static function shop_currency($n, $in_currency = null, $out_currency = null, $format = true) {
         /**
          * @var shopConfig $config
@@ -146,6 +146,10 @@ class shopPricePlugin extends shopPlugin {
                         }
                         $product = $product_model->getById($sku['product_id']);
 
+                        if (!empty($sku['unconverted_currency'])) {
+                            $sku['price'] = $sku['unconverted_price'];
+                        }
+
                         $price_value = $sku[$price_field];
                         $price_type = $sku[$price_field_type];
                         if ($price_type == '%') {
@@ -157,7 +161,7 @@ class shopPricePlugin extends shopPlugin {
                             $sku['price'] = shop_currency($price_value, $product['currency'], $currency, false);
                         } else {
                             if (wa()->getPlugin('price')->getSettings('set_compare_price')) {
-                                $sku['compare_price'] = shop_currency($sku['price'], $currency, $product['currency'], false);
+                                $sku['compare_price'] = $sku['price'];
                             }
                             $sku['price'] = $price_value;
                             if (!empty($sku['unconverted_currency'])) {
