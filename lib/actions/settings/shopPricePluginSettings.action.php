@@ -42,7 +42,7 @@ class shopPricePluginSettingsAction extends waViewAction {
         }
 
         $this->view->assign(array(
-            'plugin' => wa()->getPlugin('price'),
+            'plugin' => wa('shop')->getPlugin('price'),
             'route_hashs' => $route_hashs,
             'categories' => $categories,
             'prices' => $prices,

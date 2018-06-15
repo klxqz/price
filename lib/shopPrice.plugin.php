@@ -58,7 +58,7 @@ class shopPricePlugin extends shopPlugin {
     }
 
     public static function prepareProducts($products = array(), $contact_id = null, $currency = null, $storefront = null, $price_id = null) {
-        if (!wa()->getPlugin('price')->getSettings('status') && !$price_id) {
+        if (!wa('shop')->getPlugin('price')->getSettings('status') && !$price_id) {
             return $products;
         }
         $route_hash = shopPriceRouteHelper::getRouteHash($storefront);
@@ -82,7 +82,7 @@ class shopPricePlugin extends shopPlugin {
                     $price_field_type = "price_plugin_type_{$price['id']}";
                     $sku = $sku_model->getById($product['sku_id']);
                     if (isset($sku[$price_field]) && $sku[$price_field] != 0) {
-                        if (wa()->getPlugin('price')->getSettings('set_compare_price')) {
+                        if (wa('shop')->getPlugin('price')->getSettings('set_compare_price')) {
                             $product['compare_price'] = $product['price'];
                         } elseif ($product['compare_price'] > 0 && $product['compare_price'] < $sku[$price_field]) {
                             $product['compare_price'] = 0;
@@ -118,7 +118,7 @@ class shopPricePlugin extends shopPlugin {
     }
 
     public static function prepareSkus($skus = array(), $contact_id = null, $currency = null, $storefront = null, $price_id = null) {
-        if (!wa()->getPlugin('price')->getSettings('status') && !$price_id) {
+        if (!wa('shop')->getPlugin('price')->getSettings('status') && !$price_id) {
             return $skus;
         }
         $route_hash = shopPriceRouteHelper::getRouteHash($storefront);
@@ -150,6 +150,10 @@ class shopPricePlugin extends shopPlugin {
                             $sku['price'] = $sku['unconverted_price'];
                         }
 
+                        if (wa()->getEnv() == 'backend') {
+                            $sku['price'] = shop_currency($sku['price'], $currency, $product['currency'], false);
+                        }
+
                         $price_value = $sku[$price_field];
                         $price_type = $sku[$price_field_type];
                         if ($price_type == '%') {
@@ -160,7 +164,7 @@ class shopPricePlugin extends shopPlugin {
                         if (wa()->getEnv() == 'backend') {
                             $sku['price'] = shop_currency($price_value, $product['currency'], $currency, false);
                         } else {
-                            if (wa()->getPlugin('price')->getSettings('set_compare_price')) {
+                            if (wa('shop')->getPlugin('price')->getSettings('set_compare_price')) {
                                 $sku['compare_price'] = $sku['price'];
                             }
                             $sku['price'] = $price_value;
@@ -253,6 +257,7 @@ class shopPricePlugin extends shopPlugin {
         $products = $view->getVars('products');
         //Исправление цены после фильтрации shopFrontendCategoryAction::filterListSkus
         if ($products) {
+            $product_ids = array();
             foreach ($products as $p_id => $p) {
                 if ($p['sku_count'] > 1) {
                     $product_ids[] = $p_id;
