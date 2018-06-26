@@ -88,7 +88,7 @@
                                     <th>Наименование Мульти цены</th>
                                     <th>Витрина</th>
                                     <th>Группа покупателей</th>
-                                    <th>Сохранить/Удалить</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -96,23 +96,23 @@
                                     <tr data-id="{$price.id|escape}">
                                         <td class="align-center"><i title="Сортировка приоритета" class="icon16 sort"></i></td>
                                         <td>
-                                            <input type="hidden" name="price[id]" value="{$price.id|escape}" />
-                                            <input class="long" type="text" name="price[name]" value="{$price.name|escape}" />
+                                            <strong>{$price.name|escape}</strong>
                                         </td>
                                         <td>
                                             <div class="short-scroll">
                                                 <ul class="menu-v">
-                                                    {foreach $route_hashs as $route_hash}
-                                                        <li>
-                                                            <input type="checkbox" name="price[route_hash][]" value="{$route_hash.route_hash}"{if !empty($price.route_hash[$route_hash.route_hash])} checked{/if}/>
-                                                            {if $route_hash.route_hash}
-                                                                <a target="_blank" class="inline" href="{$route_hash.url}">
-                                                                    {$route_hash.storefront} <i class="icon10 new-window"></i>
-                                                                </a>
-                                                            {else}
-                                                                {$route_hash.storefront}
-                                                            {/if}
-                                                        </li>
+                                                    {foreach $price.route_hash as $price_route_hash}
+                                                        {if !empty($route_hashs[$price_route_hash])}
+                                                            <li>
+                                                                {if $route_hashs[$price_route_hash].route_hash}
+                                                                    <a target="_blank" class="inline" href="{$route_hashs[$price_route_hash].url}">
+                                                                        {$route_hashs[$price_route_hash].storefront} <i class="icon10 new-window"></i>
+                                                                    </a>
+                                                                {else}
+                                                                    {$route_hashs[$price_route_hash].storefront}
+                                                                {/if}
+                                                            </li>
+                                                        {/if}
                                                     {/foreach}
                                                 </ul>
                                             </div>
@@ -120,23 +120,25 @@
                                         <td>
                                             <div class="short-scroll">
                                                 <ul class="menu-v">
-                                                    {foreach $categories as $category}
-                                                        <li>
-                                                            <i class="icon16 {$category.icon}"></i> <input type="checkbox" name="price[category_id][]" value="{$category.id}"{if !empty($price.category_id[$category.id])} checked{/if}/>
-                                                            {if $category.id}
-                                                                <a target="_blank" class="inline" href="?action=customers#/category/{$category.id}">
-                                                                    {$category.name} <i class="icon10 new-window"></i>
-                                                                </a>
-                                                            {else}
-                                                                {$category.name} 
-                                                            {/if}
-                                                        </li>
+                                                    {foreach $price.category_id as $category_id}
+                                                        {if !empty($categories[$category_id])}
+                                                            <li>
+                                                                <i class="icon16 {$categories[$category_id].icon}"></i>
+                                                                {if $categories[$category_id].id}
+                                                                    <a target="_blank" class="inline" href="?action=customers#/category/{$categories[$category_id].id}">
+                                                                        {$categories[$category_id].name} <i class="icon10 new-window"></i>
+                                                                    </a>
+                                                                {else}
+                                                                    {$categories[$category_id].name} 
+                                                                {/if}
+                                                            </li>
+                                                        {/if}
                                                     {/foreach}
                                                 </ul>
                                             </div>
                                         </td>
                                         <td class="align-center">
-                                            <a class="inline save-row" href="#" title="Сохранить"><i class="icon16 yes"></i></a>
+                                            <a class="inline edit-row" href="#" title="Редактировать"><i class="icon16 edit"></i></a>
                                             <a class="inline delete-row" href="#" title="Удалить"><i class="icon16 no"></i></a>
                                         </td>
                                     </tr>
@@ -177,6 +179,49 @@
         <tr data-id="${price.id}">
         <td class="align-center"><i class="icon16 sort"></i></td>
         <td>
+        <strong>${price.name}</strong>
+        </td>
+        <td>
+        <ul class="menu-v">
+        {{each price.route_hash}}
+        <li>
+        {{if $value != 0}}
+        <a target="_blank" class="inline" href="${route_hashs[$value].url}">
+        ${route_hashs[$value].storefront} <i class="icon10 new-window"></i>
+        </a>
+        {{else}}
+        ${route_hashs[$value].storefront}
+        {{/if}}
+        </li>
+        {{/each}}
+        </ul>
+        </td>
+        <td>
+        <ul class="menu-v">
+        {{each price.category_id}}
+        <li>
+        <i class="icon16 ${categories[$value].icon}"></i>
+        {{if $value != 0}}
+        <a target="_blank" class="inline" href="?action=customers#/category/${$value}">
+        ${categories[$value].name} <i class="icon10 new-window"></i>
+        </a>
+        {{else}}
+        ${categories[$value].name}
+        {{/if}}
+        </li>
+        {{/each}}
+        </ul>
+        </td>
+        <td class="align-center">
+        <a class="inline edit-row" href="#" title="Редактировать"><i class="icon16 edit"></i></a>
+        <a class="inline delete-row" href="#" title="Удалить"><i class="icon16 no"></i></a>
+        </td>
+        </tr>
+    </script>
+    <script id="price-tmpl-edit" type="text/x-jquery-tmpl">
+        <tr data-id="${price.id}">
+        <td class="align-center"><i class="icon16 sort"></i></td>
+        <td>
         <input type="hidden" name="price[id]" value="${price.id}" />
         <input class="long" type="text" name="price[name]" value="${price.name}" />
         </td>
@@ -210,8 +255,8 @@
         </ul>
         </td>
         <td class="align-center">
-        <a class="inline save-row" href="#"><i class="icon16 yes"></i></a>
-        <a class="inline delete-row" href="#"><i class="icon16 no"></i></a>
+        <a class="inline save-row" href="#" title="Сохранить"><i class="icon16 yes"></i></a>
+        <a class="inline delete-row" href="#" title="Удалить"><i class="icon16 no"></i></a>
         </td>
         </tr>
     </script>

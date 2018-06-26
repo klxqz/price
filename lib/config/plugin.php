@@ -4,10 +4,11 @@ return array(
     'name' => 'Мульти Цены (Оптовые цены)',
     'description' => 'Поддержка различных типов цен для разных групп пользователей',
     'vendor' => 985310,
-    'version' => '3.2.1',
+    'version' => '4.0.0',
     'img' => 'img/price.png',
     'shop_settings' => true,
     'frontend' => false,
+    'importexport' => true,
     'handlers' => array(
         'frontend_products' => 'frontendProducts',
         'backend_product_sku_settings' => 'backendProductSkuSettings',

@@ -38,7 +38,7 @@
                     categories: self.options.categories
                 };
                 if (table.length) {
-                    $('#price-tmpl').tmpl(tmp_data).appendTo(table.find('tbody'));
+                    $('#price-tmpl-edit').tmpl(tmp_data).appendTo(table.find('tbody'));
                 }
                 return false;
             });
@@ -64,6 +64,39 @@
                 }
             });
 
+            $(document).on('click', '.edit-row', function () {
+                var button = $(this);
+                var loading = $('<i class="icon16 loading"></i>');
+                button.hide().siblings('a').hide();
+                button.after(loading);
+                $.ajax({
+                    url: '?plugin=price&module=settings&action=getPrice',
+                    type: 'POST',
+                    data: {
+                        id: button.closest('tr').data('id')
+                    },
+                    success: function (data, textStatus) {
+                        if (data.status == 'ok') {
+                            var tmp_data = {
+                                price: data.data.price,
+                                categories: self.options.categories,
+                                route_hashs: self.options.route_hashs
+                            };
+                            button.closest('tr').replaceWith($('#price-tmpl-edit').tmpl(tmp_data));
+                        } else {
+                            button.show();
+                            loading.remove();
+                            alert(data.errors.join(' '));
+                        }
+                    },
+                    error: function (jqXHR) {
+                        button.show().siblings('a').show();
+                        loading.remove();
+                        alert(jqXHR.responseText);
+                    }
+                });
+                return false;
+            });
             $(document).on('click', '.delete-row', function () {
                 if ($(this).closest('tr').data('id')) {
                     if (!confirm("Внимание! При удалении выбранной мультицены будут удалены все мультицены данного типа, установленные для товаров. Продолжить?")) {

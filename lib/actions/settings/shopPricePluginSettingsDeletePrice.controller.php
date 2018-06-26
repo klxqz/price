@@ -6,7 +6,7 @@ class shopPricePluginSettingsDeletePriceController extends waJsonController {
         try {
             $id = waRequest::post('id', 0, waRequest::TYPE_INT);
             if (!$id) {
-                throw new waException('Не указан идентификатор');
+                throw new waException('Ошибка передачи данных');
             }
             $price_model = new shopPricePluginModel();
             $price_model->deleteById($id);

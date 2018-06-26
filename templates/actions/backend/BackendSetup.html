@@ -1,0 +1,131 @@
+<script type="text/javascript" src="{$wa_url}wa-content/js/jquery-plugins/fileupload/jquery.iframe-transport.js"></script>
+<script type="text/javascript" src="{$wa_url}wa-content/js/jquery-plugins/fileupload/jquery.fileupload.js"></script>
+
+<p>Импорт/Экспорт мильти цен</p>
+<div class="block double-padded">
+
+    <form id="s-plugin-price" method="post" >
+        {$wa->csrf()}
+        <div class="fields">
+
+            <div class="field-group">
+                <h2>Импорт</h2>
+                <p>Загрузка мульти цен из CSV-файла на сайт</p>
+                <div class="field">
+                    <div class="name">
+                        Разделитель
+                    </div>
+                    <div class="value">
+                        <select name="settings[delimiter]">
+                            <option value=";">;</option>
+                            <option value=",">,</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="name">
+                        Ограничитель
+                    </div>
+                    <div class="value">
+                        <select name="settings[enclosure]">
+                            <option value='"'>"</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="name">
+                        Файл
+                    </div>
+                    <div class="value no-shift">
+                        <input type="file" class="fileupload" data-action="?plugin=price&module=upload">
+                        <div class="js-fileupload-progress" style="display:none;">
+                            <i class="icon16 loading"></i><span><!-- upload progress handler --></span>
+                        </div>
+                        <span class="errormsg" style="display:none;"><br><br><i class="icon10 no"></i> <span></span></span>
+
+                    </div>
+                </div>
+                <div class="field-group" id="plugin-price-submit-import">
+                    <div class="submit">
+                        <input type="submit" class="button green" value="Загрузить заказы">
+                        <div class="js-progressbar-container" style="display:none;">
+                            <div class="progressbar blue float-left" style="display: none; width: 70%;">
+                                <div class="progressbar-outer">
+                                    <div class="progressbar-inner" style="width: 0;"></div>
+                                </div>
+                            </div>
+                            <img style="float:left; margin-top:8px;" src="{$wa_url}wa-content/img/loading32.gif"/>
+
+                            <div class="clear"></div>
+                            <span class="progressbar-description"></span>
+                            <br style="clear:left;"/>
+                            <br>
+                            <span class="small italic">
+                                Не закрывайте окно браузера и не покидайте страницу до тех пор, пока процесс синхронизации не будет завершен
+                            </span>
+                        </div>
+                        <br><br>
+                        <em class="errormsg"></em>
+                    </div>
+                </div>
+                <div class="field-group" id="plugin-price-report-import" style="display: none;"></div>
+
+            </div>
+
+            <div class="field-group">
+                <h2>Экспорт</h2>
+                <p>Выгрузка мульти цен в CSV-файл</p>
+                <div class="field-group" id="plugin-price-submit-export">
+                    <div class="submit">
+                        <input type="submit" class="button green" value="Выгрузить заказы">
+                        <div class="js-progressbar-container" style="display:none;">
+                            <div class="progressbar blue float-left" style="display: none; width: 70%;">
+                                <div class="progressbar-outer">
+                                    <div class="progressbar-inner" style="width: 0;"></div>
+                                </div>
+                            </div>
+                            <img style="float:left; margin-top:8px;" src="{$wa_url}wa-content/img/loading32.gif"/>
+
+                            <div class="clear"></div>
+                            <span class="progressbar-description"></span>
+                            <br style="clear:left;"/>
+                            <br>
+                            <span class="small italic">
+                                Не закрывайте окно браузера и не покидайте страницу до тех пор, пока процесс синхронизации не будет завершен
+                            </span>
+                        </div>
+                        <br><br>
+                        <em class="errormsg"></em>
+                    </div>
+                </div>
+                <div class="field-group" id="plugin-price-report-export" style="display: none;"></div>
+
+            </div>
+
+        </div>
+    </form>
+
+
+    <div class="clear-both"></div>
+
+</div>
+
+<script type="text/javascript">
+    if ($.importexport.plugins.price_import) {
+        $.importexport.plugins.price_import.init({$params|json_encode});
+    } else {
+        $.getScript('{$wa_app_static_url}plugins/price/js/importexport_import.js', function () {
+            $.importexport.plugins.price_import.init({$params|json_encode});
+        });
+    }
+
+    if ($.importexport.plugins.price_export) {
+        $.importexport.plugins.price_export.init({$params|json_encode});
+    } else {
+        $.getScript('{$wa_app_static_url}plugins/price/js/importexport_export.js', function () {
+            $.importexport.plugins.price_export.init({$params|json_encode});
+        });
+    }
+
+</script>

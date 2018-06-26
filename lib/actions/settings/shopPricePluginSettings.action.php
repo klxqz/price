@@ -5,12 +5,15 @@ class shopPricePluginSettingsAction extends waViewAction {
     public function execute() {
         $ccm = new waContactCategoryModel();
         $categories = array();
-        $categories[] = array(
+        $categories[0] = array(
             'id' => 0,
             'name' => 'Все покупатели',
             'icon' => 'contact',
         );
-        $categories = array_merge($categories, $ccm->getByField('app_id', 'shop', true));
+        foreach ($ccm->getByField('app_id', 'shop', true) as $category) {
+            $categories[$category['id']] = $category;
+        }
+
         $price_model = new shopPricePluginModel();
         $prices = $price_model->getAll();
 
@@ -19,30 +22,32 @@ class shopPricePluginSettingsAction extends waViewAction {
             $params = $price_params_model->getByField('price_id', $price['id'], true);
             if ($params) {
                 foreach ($params as $param) {
-                    $price['route_hash'][$param['route_hash']] = 1;
-                    $price['category_id'][$param['category_id']] = 1;
+                    $price['route_hash'][] = $param['route_hash'];
+                    $price['category_id'][] = $param['category_id'];
                 }
             }
+            $price['route_hash'] = array_unique($price['route_hash']);
+            $price['category_id'] = array_unique($price['category_id']);
         }
         unset($price);
 
         $_route_hashs = shopPriceRouteHelper::getRouteHashs();
         $route_hashs = array(
-            array(
+            0 => array(
                 'storefront' => 'Все витрины',
                 'route_hash' => 0,
             )
         );
         foreach ($_route_hashs as $storefront => $route_hash) {
-            $route_hashs[] = array(
+            $route_hashs[$route_hash] = array(
                 'storefront' => $storefront,
                 'route_hash' => $route_hash,
                 'url' => 'http://' . str_replace('*', '', $storefront),
             );
         }
-
+        
         $this->view->assign(array(
-            'plugin' => wa('shop')->getPlugin('price'),
+            'plugin' => wa()->getPlugin('price'),
             'route_hashs' => $route_hashs,
             'categories' => $categories,
             'prices' => $prices,

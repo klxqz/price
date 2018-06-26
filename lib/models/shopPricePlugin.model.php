@@ -36,9 +36,9 @@ class shopPricePluginModel extends shopSortableModel {
         return parent::deleteByField($field, $value);
     }
 
-    public function insert($data, $type = 0) {
+    public function insertPrice($data) {
         $this->checkData($data);
-        $id = parent::insert($data, $type);
+        $id = parent::insert($data);
         $this->insertParams($id, $data['route_hash'], $data['category_id']);
 
         $sql = "ALTER TABLE `shop_product_skus` ADD `price_plugin_{$id}` DECIMAL(15,4) NOT NULL DEFAULT '0.0000';";
@@ -49,11 +49,11 @@ class shopPricePluginModel extends shopSortableModel {
         return $id;
     }
 
-    public function updateById($id, $data, $options = null, $return_object = false) {
+    public function updatePriceById($id, $data, $options = null, $return_object = false) {
         return self::updateByField($this->remapId($id), $data, $options, $return_object);
     }
 
-    public function updateByField($field, $value, $data = null, $options = null, $return_object = false) {
+    public function updatePriceByField($field, $value, $data = null, $options = null, $return_object = false) {
         if (is_array($field)) {
             $this->checkData($value);
         } else {
