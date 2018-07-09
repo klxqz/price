@@ -50,7 +50,7 @@ class shopPricePluginModel extends shopSortableModel {
     }
 
     public function updatePriceById($id, $data, $options = null, $return_object = false) {
-        return self::updateByField($this->remapId($id), $data, $options, $return_object);
+        return self::updatePriceByField($this->remapId($id), $data, $options, $return_object);
     }
 
     public function updatePriceByField($field, $value, $data = null, $options = null, $return_object = false) {
