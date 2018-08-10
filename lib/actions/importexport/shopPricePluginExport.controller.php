@@ -151,7 +151,8 @@ class shopPricePluginExportController extends waLongActionController {
                 }
                 $profile_config = $profile['config'];
             }
-
+            $hash = shopImportexportHelper::getCollectionHash();
+            $this->data['hash'] = $hash['hash'];
 
             $this->data['profile_id'] = $profile_id;
             $this->data['profile_config'] = $profile_config;
@@ -162,9 +163,18 @@ class shopPricePluginExportController extends waLongActionController {
 
             $this->data['count'] = array_fill_keys($stages, 0);
 
+            $collection = new shopProductsCollection($this->data['hash']);
+            $products = $collection->getProducts('*', 0, 999999);
+            $this->data['product_ids'] = array_keys($products);
+
             $sku_model = $this->getModel('shopProductSkusModel');
 
-            $this->data['count'][self::STAGE_PRODUCTS] = $sku_model->select('*')->query()->count();
+            if ($this->data['product_ids']) {
+                $this->data['count'][self::STAGE_PRODUCTS] = $sku_model->select('*')->where("product_id IN (" . implode(',', $this->data['product_ids']) . ")")->query()->count();
+            } else {
+                $this->data['count'][self::STAGE_PRODUCTS] = 0;
+            }
+
 
             $this->data['current'] = array_fill_keys($stages, 0);
             $this->data['processed_count'] = array_fill_keys($stages, 0);
@@ -202,6 +212,7 @@ class shopPricePluginExportController extends waLongActionController {
             );
             foreach ($this->data['prices'] as $price) {
                 $data['price_type_' . $price['id']] = iconv('UTF-8', 'CP1251', $price['name'] . ' (Тип цены)');
+                $data['price_currency_' . $price['id']] = iconv('UTF-8', 'CP1251', $price['name'] . ' (Валюта цены)');
                 $data['price_' . $price['id']] = iconv('UTF-8', 'CP1251', $price['name'] . ' (Цена)');
             }
 
@@ -217,7 +228,7 @@ class shopPricePluginExportController extends waLongActionController {
     public function stepProducts() {
         $sku_model = $this->getModel('shopProductSkusModel');
         $offset = $this->data['current'][self::STAGE_PRODUCTS];
-        $sku = $sku_model->select('*')->order('product_id')->limit("$offset, 1")->query()->fetchAssoc();
+        $sku = $sku_model->select('*')->where("product_id IN (" . implode(',', $this->data['product_ids']) . ")")->order('product_id')->limit("$offset, 1")->query()->fetchAssoc();
 
         $product_model = $this->getModel('shopProductModel');
         $product = $product_model->getById($sku['product_id']);
@@ -230,7 +241,9 @@ class shopPricePluginExportController extends waLongActionController {
         );
         foreach ($this->data['prices'] as $price) {
             $type = $sku['price_plugin_type_' . $price['id']];
+            $currency = $sku['price_plugin_currency_' . $price['id']];
             $data['price_type_' . $price['id']] = $this->data['price_types'][$type];
+            $data['price_currency_' . $price['id']] = $currency ? $currency : iconv('UTF-8', 'CP1251', 'По умолчанию');
             $data['price_' . $price['id']] = (float) $sku['price_plugin_' . $price['id']];
         }
 
@@ -244,7 +257,7 @@ class shopPricePluginExportController extends waLongActionController {
         }
     }
 
-    public function getModel($model_name) {
+    private function getModel($model_name) {
         if (!class_exists($model_name)) {
             throw new waException(sprintf('Модель %s не найдена', $model_name));
         }

@@ -204,6 +204,7 @@ class shopPricePluginImportController extends waLongActionController {
 
             foreach ($this->data['prices'] as $price) {
                 $map_keys['price_type_' . $price['id']] = $price['name'] . ' (Тип цены)';
+                $map_keys['price_currency_' . $price['id']] = $price['name'] . ' (Валюта цены)';
                 $map_keys['price_' . $price['id']] = $price['name'] . ' (Цена)';
             }
 
@@ -252,7 +253,10 @@ class shopPricePluginImportController extends waLongActionController {
                     $update = array();
                     foreach ($this->data['prices'] as $price) {
                         $price_type = $data[$map['price_type_' . $price['id']]];
+                        $price_currency = $data[$map['price_currency_' . $price['id']]];
+
                         $update['price_plugin_type_' . $price['id']] = $this->data['price_types'][$price_type];
+                        $update['price_plugin_currency_' . $price['id']] = $price_currency == 'По умолчанию' ? '' : $price_currency;
                         $update['price_plugin_' . $price['id']] = $data[$map['price_' . $price['id']]];
                     }
                     $sku_model->updateByField($key, $update);

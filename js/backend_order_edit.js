@@ -22,8 +22,9 @@ $(function () {
                         }
                         var r = data.data[product_id];
                         var index = $(this).data('index');
-                        var price_name = $(this).find('[name*="price"]').attr('name');
-                        var match = price_name.match(/price\[([^\]]+)\]\[([^\]]+)\]/i);
+                        var price_name = $(this).find('[name*="quantity"]').attr('name');
+                        var match = price_name.match(/quantity\[([^\]]+)\]\[([^\]]+)\]/i);
+                        console.log(match);
                         var mode = match[1];
                         var item_id = match[2];
                         var sku_id = $(this).find('[name="sku[' + mode + '][' + item_id + ']"]:checked').length ? $(this).find('[name="sku[' + mode + '][' + item_id + ']"]:checked').val() : null;
@@ -37,7 +38,7 @@ $(function () {
                             'stock': stock
                         };
                         var tmp = mode == 'edit' ? 'template-order-edit-priceplugin' : 'template-order-add-priceplugin';
-
+console.log(defaults);
                         $(this).replaceWith(
                                 tmpl(tmp, {
                                     data: r,
@@ -58,23 +59,25 @@ $(function () {
         return false;
     });
     var updateStockIcon = function (order_item) {
-        var select = order_item.find('.s-orders-stock');
+        var select = order_item.find('.s-orders-sku-stock-select');
         var option = select.find('option:selected');
-        var sku_item = order_item.find('.s-orders-skus').
-                find('input[type=radio]:checked').
-                parents('li:first');
+        var sku_item = order_item.find('.s-orders-skus').find('input[type=radio]:checked').parents('li:first');
+
         order_item.find('.s-orders-stock-icon-aggregate').show();
         order_item.find('.s-orders-stock-icon').html('').hide();
+
         // choose item to work with
         var item = sku_item.length ?
                 sku_item : // sku case
-                order_item; // product case (one sku)
+                order_item;  // product case (one sku)
 
         if (option.attr('data-icon')) {
             item.find('.s-orders-stock-icon-aggregate').hide();
             item.find('.s-orders-stock-icon').html(
                     option.attr('data-icon')
                     ).show();
+            order_item.find('.s-orders-stock-icon .s-stock-left-text').show();
+            item.find('.s-orders-stock-icon .s-stock-left-text').hide();
         }
     };
     setTimeout(function () {
@@ -82,7 +85,7 @@ $(function () {
         var add_order_input = $("#orders-add-autocomplete");
         add_order_input.autocomplete("destroy");
         add_order_input.autocomplete({
-            source: '?action=autocomplete&with_counts=1&with_sku_name=1',
+            source: '?action=autocomplete&with_counts=1',
             minLength: 3,
             delay: 300,
             select: function (event, ui) {
@@ -102,7 +105,7 @@ $(function () {
                 }
                 $.getJSON(url + ($.order_edit.id ? '&order_id=' + $.order_edit.id : '&currency=' + $.order_edit.options.currency), function (r) {
                     var table = $('#order-items');
-                    var index = parseInt(table.find('.s-order-item:last').attr('data-index'), 10) + 1 || 1;
+                    var index = parseInt(table.find('.s-order-item:last').attr('data-index'), 10) + 1 || 0;
                     var product = r.data.product;
                     if (product.sku_id && product.skus[product.sku_id]) {
                         product.skus[product.sku_id].checked = true;
@@ -163,8 +166,15 @@ $(function () {
                                 url += '&price_id=' + $('[name=price_id]').val();
                             }
                             $.getJSON(url + ($.order_edit.id ? '&order_id=' + $.order_edit.id : '&currency=' + $.order_edit.options.currency), function (r) {
+                                var ns;
+                                if (tr.find('input:first').attr('name').indexOf('add') !== -1) {
+                                    ns = 'add';
+                                } else {
+                                    ns = 'edit';
+                                }
+
                                 tr.find('.s-orders-services').replaceWith(
-                                        tmpl('template-order-services', {
+                                        tmpl('template-order-services-' + ns, {
                                             services: r.data.sku.services,
                                             service_ids: r.data.service_ids,
                                             product_id: product_id,
@@ -181,13 +191,6 @@ $(function () {
                                         find('input').val(r.data.sku.price);
                                 //.trigger('change');
 
-                                var ns;
-                                if (tr.find('input:first').attr('name').indexOf('add') !== -1) {
-                                    ns = 'add';
-                                } else {
-                                    ns = 'edit';
-                                }
-
                                 tr.find('.s-orders-sku-stock-place').empty();
                                 li.find('.s-orders-sku-stock-place').html(
                                         tmpl('template-order-stocks-' + ns, {
@@ -198,7 +201,7 @@ $(function () {
                                         })
                                         );
                                 updateStockIcon(tr);
-                                $.order_edit.updateTotal(tr);
+                                $.order_edit.updateTotal();
                             });
                         }
                 );

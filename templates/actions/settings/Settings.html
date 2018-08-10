@@ -86,6 +86,7 @@
                                 <tr>
                                     <th>Сортировка<br/>приоритета</th>
                                     <th>Наименование Мульти цены</th>
+                                    <th>Валюта</th>
                                     <th>Витрина</th>
                                     <th>Группа покупателей</th>
                                     <th></th>
@@ -97,6 +98,9 @@
                                         <td class="align-center"><i title="Сортировка приоритета" class="icon16 sort"></i></td>
                                         <td>
                                             <strong>{$price.name|escape}</strong>
+                                        </td>
+                                        <td>
+                                            {$price.currency|default:'Валюта товара'|escape}
                                         </td>
                                         <td>
                                             <div class="short-scroll">
@@ -150,6 +154,7 @@
                     <a class="inline-link add-row" href="#"><i class="icon16 add"></i><b><i>Добавить</i></b></a>
                     <a class="inline-link" target="_blank" href="?action=customers"><i class="icon16 contact"></i><b><i>Настройки покупателей</i></b></a>
                     <a class="inline-link" target="_blank" href="{$wa_backend_url}site/#/routing/"><i class="icon16 split"></i><b><i>Настройки витрин</i></b></a>
+                    <a class="inline-link" target="_blank" href="?action=importexport#/price/"><i class="icon16 sync"></i><b><i>Импорт/Экспорт</i></b></a>
                 </div>
             </div>
         </div>
@@ -180,6 +185,13 @@
         <td class="align-center"><i class="icon16 sort"></i></td>
         <td>
         <strong>${price.name}</strong>
+        </td>
+        <td>
+        {{if price.currency}}
+        ${price.currency}
+        {{else}}
+        Валюта товара
+        {{/if}}
         </td>
         <td>
         <ul class="menu-v">
@@ -226,6 +238,14 @@
         <input class="long" type="text" name="price[name]" value="${price.name}" />
         </td>
         <td>
+        <select name="price[currency]">
+        <option value=""{{if !price.currency}} selected{{/if}}>Валюта товара</option>
+        {{each currencies}}
+        <option value="${$value.code}"{{if price.currency == $value.code}} selected{{/if}}>${$value.code}</option>
+        {{/each}}
+        </select>
+        </td>
+        <td>
         <ul class="menu-v">
         {{each route_hashs}}
         <li>
@@ -265,16 +285,10 @@
 
 <script type="text/javascript" src="{$wa_app_static_url}plugins/price/js/price_settings.js?v{$plugin->getVersion()}"></script>
 <script type="text/javascript">
-    $(window).resize(function () {
-        if ($('.price-table').width() + 170 > $('#wa-plugins-content').width()) {
-            $('.scroll-table').width($('#wa-plugins-content').width() - 170);
-        } else {
-            $('.scroll-table').width('auto');
-        }
-    }).resize();
-    $.price_plugin.init({
-        route_hashs: {json_encode($route_hashs)},
-        categories: {json_encode($categories)}
-    });
+$.price_plugin.init({
+    route_hashs: {json_encode($route_hashs)},
+    categories: {json_encode($categories)},
+    currencies: {json_encode($currencies)}
+});
 </script>
 

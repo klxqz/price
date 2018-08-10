@@ -7,6 +7,13 @@
             this.options = options;
             this.initButtons();
             this.initSort();
+            $(window).resize(function () {
+                if ($('.price-table').width() + 170 > $('#wa-plugins-content').width()) {
+                    $('.scroll-table').width($('#wa-plugins-content').width() - 170);
+                } else {
+                    $('.scroll-table').width('auto');
+                }
+            }).resize();
         },
         initButtons: function () {
             var self = this;
@@ -35,7 +42,8 @@
                         category_id: []
                     },
                     route_hashs: self.options.route_hashs,
-                    categories: self.options.categories
+                    categories: self.options.categories,
+                    currencies: self.options.currencies
                 };
                 if (table.length) {
                     $('#price-tmpl-edit').tmpl(tmp_data).appendTo(table.find('tbody'));
@@ -80,7 +88,8 @@
                             var tmp_data = {
                                 price: data.data.price,
                                 categories: self.options.categories,
-                                route_hashs: self.options.route_hashs
+                                route_hashs: self.options.route_hashs,
+                                currencies: self.options.currencies
                             };
                             button.closest('tr').replaceWith($('#price-tmpl-edit').tmpl(tmp_data));
                         } else {

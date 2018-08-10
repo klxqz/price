@@ -32,6 +32,8 @@ class shopPricePluginModel extends shopSortableModel {
             $this->query($sql);
             $sql = "ALTER TABLE `shop_product_skus` DROP `price_plugin_type_" . $this->escape($price['id']) . "`";
             $this->query($sql);
+            $sql = "ALTER TABLE `shop_product_skus` DROP `price_plugin_currency_" . $this->escape($price['id']) . "`";
+            $this->query($sql);
         }
         return parent::deleteByField($field, $value);
     }
@@ -45,7 +47,8 @@ class shopPricePluginModel extends shopSortableModel {
         $this->query($sql);
         $sql = "ALTER TABLE `shop_product_skus` ADD `price_plugin_type_{$id}` ENUM( '', '%', '+' ) NOT NULL DEFAULT '';";
         $this->query($sql);
-
+        $sql = "ALTER TABLE `shop_product_skus` ADD `price_plugin_currency_{$id}` CHAR( 3 ) NULL DEFAULT NULL;";
+        $this->query($sql);
         return $id;
     }
 

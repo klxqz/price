@@ -13,6 +13,12 @@ class shopPricePluginBackendGetProductsController extends shopOrdersGetProductCo
         $_products = waRequest::post('product');
         $product_ids = array();
 
+        if (!$currency) {
+            $order_model = new shopOrderModel();
+            $order = $order_model->getOrder($order_id);
+            $currency = $order['currency'];
+        }
+
         if (!empty($_products['edit'])) {
             foreach ($_products['edit'] as $product_id) {
                 $product_ids[] = $product_id;

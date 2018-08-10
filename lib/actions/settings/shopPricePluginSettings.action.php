@@ -46,11 +46,15 @@ class shopPricePluginSettingsAction extends waViewAction {
             );
         }
         
+        $currency_model = new shopCurrencyModel();
+        $currencies = $currency_model->getCurrencies();
+        
         $this->view->assign(array(
             'plugin' => wa()->getPlugin('price'),
             'route_hashs' => $route_hashs,
             'categories' => $categories,
             'prices' => $prices,
+            'currencies' => $currencies,
         ));
     }
 
