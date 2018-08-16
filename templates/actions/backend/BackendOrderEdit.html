@@ -94,6 +94,7 @@
                 }); %}</p>
             {% } %}
         </td>
+    <input name="item[edit][{%#index%}]" value="{%=defaults.item_id%}" type="hidden">
     <input type="hidden" name="product[edit][{%=defaults.item_id%}]" value="{%#product.id%}">
     <td class="valign-top nowrap{% if (options.price_edit) { %} align-right{% } %}">
         <span style="padding-top: 2px;" class="gray">&times;</span>
