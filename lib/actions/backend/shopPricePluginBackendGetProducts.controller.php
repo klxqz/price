@@ -44,17 +44,38 @@ class shopPricePluginBackendGetProductsController extends shopOrdersGetProductCo
         if ($price_id !== 0) {
             $products = shopPricePlugin::prepareProducts($products, $customer_id, $currency, $storefront, $price_id);
         }
+
         foreach ($products as &$product) {
             if ($price_id !== 0) {
                 $product['skus'] = shopPricePlugin::prepareSkus($product['skus'], $customer_id, $currency, $storefront, $price_id);
             }
+
+            $min_price = null;
+            $max_price = null;
             foreach ($product['skus'] as &$sku) {
                 if (isset($sku['price'])) {
                     $sku['price_str'] = wa_currency($sku['price'], $currency);
                     $sku['price_html'] = wa_currency_html($sku['price'], $currency);
                 }
+                if (is_null($min_price) || $sku['price'] < $min_price) {
+                    $min_price = $sku['price'];
+                }
+                if (is_null($max_price) || $sku['price'] > $max_price) {
+                    $max_price = $sku['price'];
+                }
             }
             unset($sku);
+
+            $product['min_price'] = $min_price;
+            $product['max_price'] = $max_price;
+
+            if ($product['min_price'] == $product['max_price']) {
+                $product['price_str'] = wa_currency($product['min_price'], $currency);
+                $product['price_html'] = wa_currency_html($product['min_price'], $currency);
+            } else {
+                $product['price_str'] = wa_currency($product['min_price'], $currency) . '...' . wa_currency($product['max_price'], $currency);
+                $product['price_html'] = wa_currency_html($product['min_price'], $currency) . '...' . wa_currency_html($product['max_price'], $currency);
+            }
 
             $response[$product['id']] = array(
                 'product' => $product,

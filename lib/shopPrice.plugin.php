@@ -296,6 +296,9 @@ class shopPricePlugin extends shopPlugin {
                 }
                 if ($tmp) {
                     $products = $this->prepareProducts($products);
+                    wa('shop')->event('frontend_products', ref(array(
+                        'products' => &$products,
+                    )));
                     $view->assign('products', $products);
                 }
             }

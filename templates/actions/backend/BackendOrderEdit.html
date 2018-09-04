@@ -127,6 +127,7 @@
     {% var chosen_sku_id = product.sku_id; %}
     {% var currency = options.currency; %}
     {% var stocks = o.options.stocks || {}; %}
+    {% var defaults = o.options.defaults || {}; %}
     <tr data-product-id="{%#product.id%}" data-index={%#index%} class="s-order-item">
         <td class="min-width valign-top">{% include('template-order-product-img', { url: product.url_crop_small }); %}</td>
         <td>
@@ -212,7 +213,7 @@
     <input type="text"
            name="quantity[add][{%#index%}][product]"
            class="s-orders-quantity short numerical"
-           value="1"
+           value="{%=defaults.quantity%}"
            >
 </td>
 
