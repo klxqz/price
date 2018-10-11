@@ -153,6 +153,9 @@ class shopPricePluginExportController extends waLongActionController {
             }
             $hash = shopImportexportHelper::getCollectionHash();
             $this->data['hash'] = $hash['hash'];
+            if ($this->data['hash'] == '*') {
+                $this->data['hash'] = '';
+            }
 
             $this->data['profile_id'] = $profile_id;
             $this->data['profile_config'] = $profile_config;
