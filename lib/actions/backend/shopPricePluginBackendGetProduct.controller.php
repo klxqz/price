@@ -1,8 +1,10 @@
 <?php
 
-class shopPricePluginBackendGetProductController extends shopOrdersGetProductController {
+class shopPricePluginBackendGetProductController extends shopOrdersGetProductController
+{
 
-    public function execute() {
+    public function execute()
+    {
         $price_id = waRequest::get('price_id', null, waRequest::TYPE_INT);
         $order_id = waRequest::get('order_id', null, waRequest::TYPE_INT);
         $customer_id = waRequest::get('customer_id', null, waRequest::TYPE_INT);
@@ -32,7 +34,7 @@ class shopPricePluginBackendGetProductController extends shopOrdersGetProductCon
                 $sku = $skus[$sku_id];
             }
             $this->response['sku'] = $sku;
-            $this->response['service_ids'] = array_keys($sku['services']);
+            $this->response['service_ids'] = !empty($sku['services']) ? array_keys($sku['services']) : array();
         } else {
             $product = $this->getProduct($product_id, $order_id);
             if ($price_id !== 0) {
@@ -55,7 +57,7 @@ class shopPricePluginBackendGetProductController extends shopOrdersGetProductCon
 
             $this->response['product'] = $product;
             $this->response['sku_ids'] = array_keys($product['skus']);
-            $this->response['service_ids'] = array_keys($product['services']);
+            $this->response['service_ids'] = !empty($product['services']) ? array_keys($product['services']) : array();
         }
     }
 

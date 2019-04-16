@@ -80,7 +80,7 @@ class shopPricePluginBackendGetProductsController extends shopOrdersGetProductCo
             $response[$product['id']] = array(
                 'product' => $product,
                 'sku_ids' => array_keys($product['skus']),
-                'service_ids' => array_keys($product['services']),
+                'service_ids' => !empty($product['services']) ? array_keys($product['services']) : array(),
             );
         }
         unset($product);
