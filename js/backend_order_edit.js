@@ -174,32 +174,30 @@ console.log(defaults);
                                 }
 
                                 tr.find('.s-orders-services').replaceWith(
-                                        tmpl('template-order-services-' + ns, {
-                                            services: r.data.sku.services,
-                                            service_ids: r.data.service_ids,
-                                            product_id: product_id,
-                                            options: {
-                                                price_edit: price_edit,
-                                                index: index,
-                                                currency: $.order_edit.options.currency,
-                                                stocks: $.order_edit.stocks
-                                            }
-                                        })
-                                        );
-                                tr.find('.s-orders-product-price').
-                                        //find('span').html(r.data.sku.price_html || r.data.sku.price_str).end().
-                                        find('input').val(r.data.sku.price);
-                                //.trigger('change');
+                                    tmpl('template-order-services-' + ns, {
+                                        services: r.data.sku.services,
+                                        service_ids: r.data.service_ids,
+                                        product_id: product_id,
+                                        options: {
+                                            price_edit: price_edit,
+                                            index: index,
+                                            currency: $.order_edit.options.currency,
+                                            stocks: $.order_edit.stocks
+                                        }
+                                    })
+                                );
+                                tr.find('.s-orders-product-price').find('input').val(r.data.sku.price);
 
                                 tr.find('.s-orders-sku-stock-place').empty();
                                 li.find('.s-orders-sku-stock-place').html(
-                                        tmpl('template-order-stocks-' + ns, {
-                                            sku: r.data.sku,
-                                            index: index,
-                                            stocks: $.order_edit.stocks,
-                                            item_id: item_id   // use only for edit namespace
-                                        })
-                                        );
+                                    tmpl('template-order-stocks-' + ns, {
+                                        sku: r.data.sku,
+                                        index: index,
+                                        stocks: $.order_edit.stocks,
+                                        item_id: item_id   // use only for edit namespace
+                                    })
+                                );
+
                                 updateStockIcon(tr);
                                 $.order_edit.updateTotal();
                             });
