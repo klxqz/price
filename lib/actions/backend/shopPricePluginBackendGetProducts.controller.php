@@ -1,13 +1,15 @@
 <?php
 
-class shopPricePluginBackendGetProductsController extends shopOrdersGetProductController {
+class shopPricePluginBackendGetProductsController extends shopOrdersGetProductController
+{
 
-    public function execute() {
+    public function execute()
+    {
         $price_id = waRequest::post('price_id', null, waRequest::TYPE_INT);
         $order_id = waRequest::post('order_id', null, waRequest::TYPE_INT);
         $customer_id = waRequest::post('customer_id', null, waRequest::TYPE_INT);
         $order_id = $order_id ? $order_id : null;
-        $currency = waRequest::post('currency');
+        $currency = $this->getCurrency();
         $storefront = waRequest::post('storefront');
 
         $_products = waRequest::post('product');
@@ -36,7 +38,14 @@ class shopPricePluginBackendGetProductsController extends shopOrdersGetProductCo
 
         $products = array();
         foreach ($product_ids as $product_id) {
-            $products[$product_id] = $this->getProduct($product_id, $order_id);
+            $shop_product = new shopProduct($product_id, ['round_currency' => $currency]);
+            $product = $shop_product->getData();
+            $product = $this->workupProduct($product);
+
+            $product['skus'] = $shop_product->getSkus();
+            $product['skus'] = $this->workupSkus($product['skus']);
+
+            $products[$product_id] = $product;
         }
 
         $response = array();
@@ -85,6 +94,11 @@ class shopPricePluginBackendGetProductsController extends shopOrdersGetProductCo
         }
         unset($product);
         $this->response = $response;
+    }
+
+    protected function getCurrency()
+    {
+        return waRequest::post('currency', null, waRequest::TYPE_STRING);
     }
 
 }
