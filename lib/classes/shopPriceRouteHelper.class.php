@@ -35,6 +35,8 @@ class shopPriceRouteHelper {
     public static function getCurrentRouteHash() {
         $domain = wa()->getRouting()->getDomain(null, true);
         $route = wa()->getRouting()->getRoute();
+        ##echo '<pre>', print_r($domain), '</pre>';
+        ##echo '<pre>', print_r($route), '</pre>';
         return md5($domain . '/' . $route['url']);
     }
 

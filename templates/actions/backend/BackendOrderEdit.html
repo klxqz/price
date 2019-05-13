@@ -22,12 +22,6 @@
                 <span class="gray">{%#product.price_html%}</span>
 
                 {% if (sku_count == 1) { %}
-                {% if (product.compare_price && product.compare_price > 0) { %}
-                <span class="hint compare-price">(<span style="text-decoration: line-through">{%=Number(Math.round((product.compare_price)*100)/100) %}</span> {%#currency%})</span>
-                {% } %}
-                {% } %}
-
-                {% if (sku_count == 1) { %}
                 <span class="s-orders-stock-icon-aggregate">
                     {%#product.icon%}
                 </span>
@@ -60,11 +54,6 @@
                             {% } %}
 
                             <strong>{%#sku.price_html%}</strong>
-
-                            {% if (sku.compare_price && sku.compare_price > 0) { %}
-                            <span class="hint compare-price">(<span style="text-decoration: line-through">{%=Number(Math.round((sku.compare_price)*100)/100)%}</span> {%#currency%})</span>
-                            {% } %}
-
                             <span class="s-orders-stock-icon-aggregate">
                                 {%#sku.icon%}
                             </span>
@@ -87,14 +76,13 @@
             </p>
 
             {% if (!$.isEmptyObject(product.services)) { %}
-            <p>{% include('template-order-services-add', {
+            <p>{% include('template-order-services', {
                 services: product.services,
                 service_ids: o.data.service_ids,
                 options: options
                 }); %}</p>
             {% } %}
         </td>
-    <input name="item[edit][{%#index%}]" value="{%=defaults.item_id%}" type="hidden">
     <input type="hidden" name="product[edit][{%=defaults.item_id%}]" value="{%#product.id%}">
     <td class="valign-top nowrap{% if (options.price_edit) { %} align-right{% } %}">
         <span style="padding-top: 2px;" class="gray">&times;</span>
@@ -112,9 +100,10 @@
         {% } else { %}
         <input type="text" name="price[edit][{%=defaults.item_id%}]" value="{%#''+product.skus[chosen_sku_id].price%}" class="short"><span style="padding-top: 2px;">{%#currency%}</span>
         {% } %}
-        <br/><span class="hint js-item-total-discount" data-discount-id="{%=defaults.item_id%}"></span>
     </td>
     <td class="valign-top min-width"><a href="#" class="s-order-item-delete"><i class="icon16 delete"></i></a></td>
+    <input name="item[edit][{%#index%}]" value="{%=defaults.item_id%}" type="hidden">
+    <input name="product[edit][{%=defaults.item_id%}]" value="{%#product.id%}" type="hidden">
 </tr>
 </script>
 
@@ -135,12 +124,6 @@
             <span class="gray">{%#product.price_html%}</span>
 
             {% if (sku_count == 1) { %}
-            {% if (product.compare_price && product.compare_price > 0) { %}
-            <span class="hint compare-price">(<span style="text-decoration: line-through">{%=Number(Math.round((product.compare_price)*100)/100) %}</span> {%#currency%})</span>
-            {% } %}
-            {% } %}
-
-            {% if (sku_count == 1) { %}
             <span class="s-orders-stock-icon-aggregate">
                 {%#product.icon%}
             </span>
@@ -155,7 +138,7 @@
                 {% var sku_id, sku_id_iterator = $.shop.iterator(sku_ids); %}
                 {% while (sku_id = sku_id_iterator.next()) { %}
                 {% var sku = product.skus[sku_id]; %}
-                {% var checked = sku.checked; %}
+                {% var checked = sku_id == defaults.sku_id; %}
                 {% if (checked) { %}
                 {% chosen_sku_id = sku_id; %}
                 {% } %}
@@ -163,7 +146,7 @@
                     <label>
 
                         <input type="radio"
-                               name="sku[add][{%#index%}]"
+                               name="sku[add][{%=defaults.item_id%}]"
                                value="{%#sku_id%}"
                                {% if (checked) { %} checked="checked" {% } %}>
                                {%=sku.name%}
@@ -173,11 +156,6 @@
                         {% } %}
 
                         <strong>{%#sku.price_html%}</strong>
-
-                        {% if (sku.compare_price && sku.compare_price > 0) { %}
-                        <span class="hint compare-price">(<span style="text-decoration: line-through">{%=Number(Math.round((sku.compare_price)*100)/100)%}</span> {%#currency%})</span>
-                        {% } %}
-
                         <span class="s-orders-stock-icon-aggregate">
                             {%#sku.icon%}
                         </span>
@@ -200,14 +178,14 @@
         </p>
 
         {% if (!$.isEmptyObject(product.services)) { %}
-        <p>{% include('template-order-services-add', {
+        <p>{% include('template-order-services', {
             services: product.services,
             service_ids: o.data.service_ids,
             options: options
             }); %}</p>
         {% } %}
     </td>
-<input type="hidden" name="product[add][{%#index%}]" value="{%#product.id%}">
+<input type="hidden" name="product[add][{%=defaults.item_id%}]" value="{%#product.id%}">
 <td class="valign-top nowrap{% if (options.price_edit) { %} align-right{% } %}">
     <span style="padding-top: 2px;" class="gray">&times;</span>
     <input type="text"
@@ -224,7 +202,6 @@
     {% } else { %}
     <input type="text" name="price[add][{%#index%}][product]" value="{%#''+product.skus[chosen_sku_id].price%}" class="short"><span style="padding-top: 2px;">{%#currency%}</span>
     {% } %}
-    <br/><span class="hint js-item-total-discount" data-discount-id="{%#index%}"></span>
 </td>
 <td class="valign-top min-width"><a href="#" class="s-order-item-delete"><i class="icon16 delete"></i></a></td>
 </tr>
@@ -235,19 +212,20 @@
     {% var sku = o.sku; %}
     {% var stocks = o.stocks; %}
     {% var item_id = o.item_id; %}
+    {% var selected = o.selected; %}
     {% if (sku && !$.isEmptyObject(sku.stock)) { %}
     <select name="stock[edit][{%#item_id%}]" class="s-orders-sku-stock-select">
         {% for (var i = 0; i < stocks.length; i += 1) { %}
         {% var stock_id = stocks[i].id; %}
-        <option value="{%#stock_id%}" data-icon="{%#''+sku.icons[stock_id]%}">
-            @{%=stocks[i].name%} ({%#sku.count_htmls[stock_id]%})
-        </option>
-        {% } %}
-    </select>
-    <em class="errormsg s-error-item-stock_id"></em>
-    {% } else { %}
-    <input type="hidden" name="stock[edit][{%#item_id%}]" value="0">
+        <option value="{%#stock_id%}" data-icon="{%#''+sku.icons[stock_id]%}" {% if (stock_id==selected) { %} selected="selected" {% } %}>
+                @{%=stocks[i].name%} ({%#sku.count_htmls[stock_id]%})
+    </option>
     {% } %}
+</select>
+<em class="errormsg s-error-item-stock_id"></em>
+{% } else { %}
+<input type="hidden" name="stock[edit][{%#item_id%}]" value="0">
+{% } %}
 </script>
 {/literal}
 

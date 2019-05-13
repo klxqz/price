@@ -11,10 +11,11 @@ class shopPricePluginModel extends shopSortableModel {
                 WHERE (`pp`.`route_hash` = '" . $this->escape($route_hash) . "' AND `pp`.`category_id` IN (" . implode(',', $category_ids) . "))
                 OR (`pp`.`route_hash` = '0' AND `pp`.`category_id` IN (" . implode(',', $category_ids) . "))
                 ORDER BY " . $this->sort;
+
         return $this->query($sql)->fetchAll('id');
     }
 
-    private function checkData($data) {
+    public function checkData($data) {
         if (empty($data['route_hash']) || !is_array($data['route_hash'])) {
             throw new waException('Не указаны витрины');
         }
@@ -32,31 +33,31 @@ class shopPricePluginModel extends shopSortableModel {
             $this->query($sql);
             $sql = "ALTER TABLE `shop_product_skus` DROP `price_plugin_type_" . $this->escape($price['id']) . "`";
             $this->query($sql);
-            $sql = "ALTER TABLE `shop_product_skus` DROP `price_plugin_currency_" . $this->escape($price['id']) . "`";
-            $this->query($sql);
         }
         return parent::deleteByField($field, $value);
     }
 
-    public function insertPrice($data) {
+/*
+    public function insert($data, $type = 0) {
         $this->checkData($data);
-        $id = parent::insert($data);
+        $id = parent::insert($data, $type);
         $this->insertParams($id, $data['route_hash'], $data['category_id']);
 
         $sql = "ALTER TABLE `shop_product_skus` ADD `price_plugin_{$id}` DECIMAL(15,4) NOT NULL DEFAULT '0.0000';";
         $this->query($sql);
         $sql = "ALTER TABLE `shop_product_skus` ADD `price_plugin_type_{$id}` ENUM( '', '%', '+' ) NOT NULL DEFAULT '';";
         $this->query($sql);
-        $sql = "ALTER TABLE `shop_product_skus` ADD `price_plugin_currency_{$id}` CHAR( 3 ) NULL DEFAULT NULL;";
-        $this->query($sql);
+
         return $id;
-    }
+    }*/
 
-    public function updatePriceById($id, $data, $options = null, $return_object = false) {
-        return self::updatePriceByField($this->remapId($id), $data, $options, $return_object);
-    }
+/*
+    public function updateById($id, $data, $options = null, $return_object = false) {
+        return self::updateByField($this->remapId($id), $data, $options, $return_object);
+    }*/
 
-    public function updatePriceByField($field, $value, $data = null, $options = null, $return_object = false) {
+/*
+    public function updateByField($field, $value, $data = null, $options = null, $return_object = false) {
         if (is_array($field)) {
             $this->checkData($value);
         } else {
@@ -73,9 +74,9 @@ class shopPricePluginModel extends shopSortableModel {
         $this->insertParams($price_id, $data['route_hash'], $data['category_id']);
 
         return $result;
-    }
+    }*/
 
-    private function insertParams($price_id, $route_hashs, $category_ids) {
+    public function insertParams($price_id, $route_hashs, $category_ids) {
         $multi_data = array();
         foreach ($route_hashs as $route_hash) {
             foreach ($category_ids as $category_id) {

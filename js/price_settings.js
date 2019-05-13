@@ -1,19 +1,15 @@
 (function ($) {
     $.price_plugin = {
         options: {
-            categories: {}
+            categories: {},
+            route_hashs: {},
+            purchase_prices: {}
         },
         init: function (options) {
             this.options = options;
             this.initButtons();
-            this.initSort();
-            $(window).resize(function () {
-                if ($('.price-table').width() + 170 > $('#wa-plugins-content').width()) {
-                    $('.scroll-table').width($('#wa-plugins-content').width() - 170);
-                } else {
-                    $('.scroll-table').width('auto');
-                }
-            }).resize();
+            this.initPriceSort();
+            this.initPurchasePriceSort();
         },
         initButtons: function () {
             var self = this;
@@ -42,11 +38,23 @@
                         category_id: []
                     },
                     route_hashs: self.options.route_hashs,
-                    categories: self.options.categories,
-                    currencies: self.options.currencies
+                    categories: self.options.categories
                 };
                 if (table.length) {
                     $('#price-tmpl-edit').tmpl(tmp_data).appendTo(table.find('tbody'));
+                }
+                return false;
+            });
+            $(document).on('click', '.purchase-add-row', function () {
+                var table = $(this).closest('.field').find('table.purchase-price-table');
+                var tmp_data = {
+                    purchase_price: {
+                        id: 0,
+                        name: ''
+                    }
+                };
+                if (table.length) {
+                    $('#purchase-price-tmpl-edit').tmpl(tmp_data).appendTo(table.find('tbody'));
                 }
                 return false;
             });
@@ -89,9 +97,40 @@
                                 price: data.data.price,
                                 categories: self.options.categories,
                                 route_hashs: self.options.route_hashs,
-                                currencies: self.options.currencies
+                                purchase_prices: self.options.purchase_prices
                             };
                             button.closest('tr').replaceWith($('#price-tmpl-edit').tmpl(tmp_data));
+                        } else {
+                            button.show();
+                            loading.remove();
+                            alert(data.errors.join(' '));
+                        }
+                    },
+                    error: function (jqXHR) {
+                        button.show().siblings('a').show();
+                        loading.remove();
+                        alert(jqXHR.responseText);
+                    }
+                });
+                return false;
+            });
+            $(document).on('click', '.purchase-edit-row', function () {
+                var button = $(this);
+                var loading = $('<i class="icon16 loading"></i>');
+                button.hide().siblings('a').hide();
+                button.after(loading);
+                $.ajax({
+                    url: '?plugin=price&module=settings&action=getPurchasePrice',
+                    type: 'POST',
+                    data: {
+                        id: button.closest('tr').data('id')
+                    },
+                    success: function (data, textStatus) {
+                        if (data.status == 'ok') {
+                            var tmp_data = {
+                                purchase_price: data.data.purchase_price
+                            };
+                            button.closest('tr').replaceWith($('#purchase-price-tmpl-edit').tmpl(tmp_data));
                         } else {
                             button.show();
                             loading.remove();
@@ -123,6 +162,41 @@
                     var self = this;
                     $.ajax({
                         url: '?plugin=price&module=settings&action=deletePrice',
+                        type: 'POST',
+                        data: {
+                            id: button.closest('tr').data('id')
+                        },
+                        success: function (data, textStatus) {
+                            button.closest('tr').remove();
+                        }, error: function (jqXHR) {
+                            inputs.removeAttr('disabled');
+                            button.show().siblings('a').show();
+                            loading.remove();
+                            alert(jqXHR.responseText);
+                        }
+                    });
+                } else {
+                    button.closest('tr').remove();
+                }
+                return false;
+            });
+            $(document).on('click', '.purchase-delete-row', function () {
+                if ($(this).closest('tr').data('id')) {
+                    if (!confirm("Внимание! При удалении выбранной закупочной цены будут удалены все закупочные цены данного типа, установленные для товаров. Продолжить?")) {
+                        return false;
+                    }
+                }
+                var button = $(this);
+                var inputs = button.closest('tr').find('input,select');
+                inputs.attr('disabled', true);
+                var loading = $('<i class="icon16 loading"></i>');
+                inputs.attr('disabled', true);
+                button.hide().siblings('a').hide();
+                button.after(loading);
+                if (button.closest('tr').data('id')) {
+                    var self = this;
+                    $.ajax({
+                        url: '?plugin=price&module=settings&action=deletePurchasePrice',
                         type: 'POST',
                         data: {
                             id: button.closest('tr').data('id')
@@ -178,8 +252,66 @@
                 return false;
             });
 
+            $(document).on('click', '.purchase-save-row', function () {
+                var button = $(this);
+                var inputs = button.closest('tr').find('input,select');
+                var data = inputs.serialize();
+                var loading = $('<i class="icon16 loading"></i>');
+                inputs.attr('disabled', true);
+                button.hide().siblings('a').hide();
+                button.after(loading);
+                $.ajax({
+                    url: '?plugin=price&module=settings&action=savePurchasePrice',
+                    type: 'POST',
+                    data: data,
+                    success: function (data, textStatus) {
+                        if (data.status == 'ok') {
+                            var tmp_data = {
+                                purchase_price: data.data.purchase_price
+                            };
+                            self.options.purchase_prices[data.data.purchase_price.id] = data.data.purchase_price;
+                            button.closest('tr').replaceWith($('#purchase-price-tmpl').tmpl(tmp_data));
+                        } else {
+                            inputs.removeAttr('disabled');
+                            button.show().siblings('a').show();
+                            loading.remove();
+                            alert(data.errors.join(' '));
+                        }
+                    },
+                    error: function (jqXHR) {
+                        inputs.removeAttr('disabled');
+                        button.show().siblings('a').show();
+                        loading.remove();
+                        alert(jqXHR.responseText);
+                    }
+                });
+                return false;
+            });
+            $('.fileupload').fileupload({
+                url: '?plugin=price&module=settings&action=upload',
+                dataType: 'json',
+                done: function (e, data) {
+                    $('.loading').remove();
+                    if (data.result.status == 'ok') {
+                        window.location.reload();
+                    } else {
+                        alert(data.result.errors[0][0]);
+                    }
+                },
+                fail: function (e, data) {
+                    $('.loading').remove();
+                    if (typeof (data.result) != "undefined") {
+                        alert(data.result.errors[0][0]);
+                    } else {
+                        alert(data.jqXHR.responseText);
+                    }
+                },
+                start: function (e, data) {
+                    $(this).parent().append('<span class="loading"><i class="icon16 loading"></i>Загрузка...</span>');
+                },
+            });
         },
-        initSort: function () {
+        initPriceSort: function () {
             var self = this;
             $('.price-table').sortable({
                 distance: 5,
@@ -203,14 +335,56 @@
                         }
                     }
                     if (!breaksort) {
-                        self.sort(id, after_id, $(this));
+                        self.priceSort(id, after_id, $(this));
                     }
 
                 }
             });
         },
-        sort: function (id, after_id, $list) {
-            $.post('?plugin=price&module=settings&action=sort', {
+        priceSort: function (id, after_id, $list) {
+            $.post('?plugin=price&module=settings&action=priceSort', {
+                id: id,
+                after_id: after_id
+            }, function (response) {
+                if (response.error) {
+                    $list.sortable('cancel');
+                }
+            }, function (response) {
+                $list.sortable('cancel');
+            });
+        },
+        initPurchasePriceSort: function () {
+            var self = this;
+            $('.purchase-price-table').sortable({
+                distance: 5,
+                opacity: 0.75,
+                items: 'tbody tr',
+                axis: 'y',
+                containment: 'parent',
+                update: function (event, ui) {
+                    var breaksort = false;
+                    var id = parseInt($(ui.item).data('id'));
+                    if (!id) {
+                        breaksort = true;
+                    }
+                    var after_id = $(ui.item).prev().data('id');
+                    if (after_id === undefined) {
+                        after_id = 0;
+                    } else {
+                        after_id = parseInt(after_id);
+                        if (!after_id) {
+                            breaksort = true;
+                        }
+                    }
+                    if (!breaksort) {
+                        self.purchasePriceSort(id, after_id, $(this));
+                    }
+
+                }
+            });
+        },
+        purchasePriceSort: function (id, after_id, $list) {
+            $.post('?plugin=price&module=settings&action=purchasePriceSort', {
                 id: id,
                 after_id: after_id
             }, function (response) {

@@ -1,8 +1,15 @@
 <?php
 
-class shopPricePluginSettingsAction extends waViewAction {
+class shopPricePluginSettingsAction extends waViewAction
+{
 
-    public function execute() {
+    public function execute()
+    {
+        if (0) {
+            $this->updateScheme();
+        }
+
+
         $ccm = new waContactCategoryModel();
         $categories = array();
         $categories[0] = array(
@@ -17,6 +24,9 @@ class shopPricePluginSettingsAction extends waViewAction {
         $price_model = new shopPricePluginModel();
         $prices = $price_model->getAll();
 
+        $price_purchase_model = new shopPricePurchasePluginModel();
+        $purchase_prices = $price_purchase_model->getAll('id');
+
         $price_params_model = new shopPricePluginParamsModel();
         foreach ($prices as &$price) {
             $params = $price_params_model->getByField('price_id', $price['id'], true);
@@ -28,6 +38,12 @@ class shopPricePluginSettingsAction extends waViewAction {
             }
             $price['route_hash'] = array_unique($price['route_hash']);
             $price['category_id'] = array_unique($price['category_id']);
+
+            if (!empty($purchase_prices[$price['purchase_price_id']])) {
+                $price['purchase_price_name'] = $purchase_prices[$price['purchase_price_id']]['name'];
+            } else {
+                $price['purchase_price_name'] = 'Стандартная закупочная цена';
+            }
         }
         unset($price);
 
@@ -45,17 +61,53 @@ class shopPricePluginSettingsAction extends waViewAction {
                 'url' => 'http://' . str_replace('*', '', $storefront),
             );
         }
-        
-        $currency_model = new shopCurrencyModel();
-        $currencies = $currency_model->getCurrencies();
-        
+
+        $price_discount_model = new shopPricePluginDiscountModel();
+        $discounts = $price_discount_model->getAll();
+
         $this->view->assign(array(
             'plugin' => wa()->getPlugin('price'),
             'route_hashs' => $route_hashs,
             'categories' => $categories,
             'prices' => $prices,
-            'currencies' => $currencies,
+            'purchase_prices' => $purchase_prices,
+            'discounts' => $discounts,
         ));
+    }
+
+
+    private function updateScheme()
+    {
+        $model = new waModel();
+
+        $sql = <<<SQL
+ALTER TABLE `shop_price` ADD `purchase_price_id` INT(11) NOT NULL DEFAULT '0' AFTER `name`; 
+SQL;
+        $model->query($sql);
+
+
+        $sql = <<<SQL
+CREATE TABLE `shop_price_purchase` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `sort` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+SQL;
+        $model->query($sql);
+
+        $sql = <<<SQL
+ALTER TABLE `shop_price_purchase`
+  ADD PRIMARY KEY (`id`);
+SQL;
+        $model->query($sql);
+
+
+        $sql = <<<SQL
+ALTER TABLE `shop_price_purchase`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+COMMIT;
+SQL;
+        $model->query($sql);
     }
 
 }

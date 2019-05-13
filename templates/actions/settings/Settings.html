@@ -35,6 +35,12 @@
     .scroll-table{
         overflow-x: auto;
     }
+    table.zebra.price-table td{
+        vertical-align: top;
+    }
+    .fileinput-button input { position: absolute; top: 0; right: 0; margin: 0; border: solid transparent; border-width: 0 0 100px 200px; opacity: 0; filter: alpha(opacity=0); -moz-transform: translate(-300px, 0) scale(4); direction: ltr; cursor: pointer; }
+    .fileinput-button { position: relative; overflow: hidden; margin-right: 4px; display: inline-block; float: left; }
+
 </style>
 <h1>{$plugin->getName()}</h1>
 <p>
@@ -75,7 +81,7 @@
         <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
             <div class="field">
                 <div class="name">
-                    Типы цен
+                    Мульти цены
                 </div>
                 <div class="value">
                     <div class="scroll-table">
@@ -83,70 +89,74 @@
 
                         <table class="price-table zebra" style="width: auto;">
                             <thead>
-                                <tr>
-                                    <th>Сортировка<br/>приоритета</th>
-                                    <th>Наименование Мульти цены</th>
-                                    <th>Валюта</th>
-                                    <th>Витрина</th>
-                                    <th>Группа покупателей</th>
-                                    <th></th>
-                                </tr>
+                            <tr>
+                                <th>Сортировка<br/>приоритета</th>
+                                <th>Наименование<br/>Мульти цены</th>
+                                <th>Закупочная цена</th>
+                                <th>Наценка</th>
+                                <th>Витрина</th>
+                                <th>Группа покупателей</th>
+                                <th></th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {foreach $prices as $price}
-                                    <tr data-id="{$price.id|escape}">
-                                        <td class="align-center"><i title="Сортировка приоритета" class="icon16 sort"></i></td>
-                                        <td>
-                                            <strong>{$price.name|escape}</strong>
-                                        </td>
-                                        <td>
-                                            {$price.currency|default:'Валюта товара'|escape}
-                                        </td>
-                                        <td>
-                                            <div class="short-scroll">
-                                                <ul class="menu-v">
-                                                    {foreach $price.route_hash as $price_route_hash}
-                                                        {if !empty($route_hashs[$price_route_hash])}
-                                                            <li>
-                                                                {if $route_hashs[$price_route_hash].route_hash}
-                                                                    <a target="_blank" class="inline" href="{$route_hashs[$price_route_hash].url}">
-                                                                        {$route_hashs[$price_route_hash].storefront} <i class="icon10 new-window"></i>
-                                                                    </a>
-                                                                {else}
-                                                                    {$route_hashs[$price_route_hash].storefront}
-                                                                {/if}
-                                                            </li>
-                                                        {/if}
-                                                    {/foreach}
-                                                </ul>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="short-scroll">
-                                                <ul class="menu-v">
-                                                    {foreach $price.category_id as $category_id}
-                                                        {if !empty($categories[$category_id])}
-                                                            <li>
-                                                                <i class="icon16 {$categories[$category_id].icon}"></i>
-                                                                {if $categories[$category_id].id}
-                                                                    <a target="_blank" class="inline" href="?action=customers#/category/{$categories[$category_id].id}">
-                                                                        {$categories[$category_id].name} <i class="icon10 new-window"></i>
-                                                                    </a>
-                                                                {else}
-                                                                    {$categories[$category_id].name} 
-                                                                {/if}
-                                                            </li>
-                                                        {/if}
-                                                    {/foreach}
-                                                </ul>
-                                            </div>
-                                        </td>
-                                        <td class="align-center">
-                                            <a class="inline edit-row" href="#" title="Редактировать"><i class="icon16 edit"></i></a>
-                                            <a class="inline delete-row" href="#" title="Удалить"><i class="icon16 no"></i></a>
-                                        </td>
-                                    </tr>
-                                {/foreach}
+                            {foreach $prices as $price}
+                                <tr data-id="{$price.id|escape}">
+                                    <td class="align-center"><i title="Сортировка приоритета" class="icon16 sort"></i></td>
+                                    <td>
+                                        <strong>{$price.name|escape}</strong>
+                                    </td>
+                                    <td>
+                                        {$price.purchase_price_name|default:''}
+                                    </td>
+                                    <td>
+                                        {(float)$price.markup}%
+                                    </td>
+                                    <td>
+                                        <div class="short-scroll">
+                                            <ul class="menu-v">
+                                                {foreach $price.route_hash as $price_route_hash}
+                                                    {if !empty($route_hashs[$price_route_hash])}
+                                                        <li>
+                                                            {if $route_hashs[$price_route_hash].route_hash}
+                                                                <a target="_blank" class="inline" href="{$route_hashs[$price_route_hash].url}">
+                                                                    {$route_hashs[$price_route_hash].storefront} <i class="icon10 new-window"></i>
+                                                                </a>
+                                                            {else}
+                                                                {$route_hashs[$price_route_hash].storefront}
+                                                            {/if}
+                                                        </li>
+                                                    {/if}
+                                                {/foreach}
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="short-scroll">
+                                            <ul class="menu-v">
+                                                {foreach $price.category_id as $category_id}
+                                                    {if !empty($categories[$category_id])}
+                                                        <li>
+                                                            <i class="icon16 {$categories[$category_id].icon}"></i>
+                                                            {if $categories[$category_id].id}
+                                                                <a target="_blank" class="inline" href="?action=customers#/category/{$categories[$category_id].id}">
+                                                                    {$categories[$category_id].name} <i class="icon10 new-window"></i>
+                                                                </a>
+                                                            {else}
+                                                                {$categories[$category_id].name}
+                                                            {/if}
+                                                        </li>
+                                                    {/if}
+                                                {/foreach}
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td class="align-center">
+                                        <a class="inline edit-row" href="#" title="Редактировать"><i class="icon16 edit"></i></a>
+                                        <a class="inline delete-row" href="#" title="Удалить"><i class="icon16 no"></i></a>
+                                    </td>
+                                </tr>
+                            {/foreach}
                             </tbody>
                         </table>
                     </div>
@@ -154,27 +164,109 @@
                     <a class="inline-link add-row" href="#"><i class="icon16 add"></i><b><i>Добавить</i></b></a>
                     <a class="inline-link" target="_blank" href="?action=customers"><i class="icon16 contact"></i><b><i>Настройки покупателей</i></b></a>
                     <a class="inline-link" target="_blank" href="{$wa_backend_url}site/#/routing/"><i class="icon16 split"></i><b><i>Настройки витрин</i></b></a>
-                    <a class="inline-link" target="_blank" href="?action=importexport#/price/"><i class="icon16 sync"></i><b><i>Импорт/Экспорт</i></b></a>
                 </div>
             </div>
         </div>
-
+        <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
+            <div class="field">
+                <div class="name">
+                    Закупочные цены
+                </div>
+                <div class="value">
+                    <div class="scroll-table">
+                        <table class="purchase-price-table zebra" style="width: auto;">
+                            <thead>
+                            <tr>
+                                <th>Сортировка</th>
+                                <th>Наименование Закупочной цены</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {foreach $purchase_prices as $purchase_price}
+                                <tr data-id="{$purchase_price.id|escape}">
+                                    <td class="align-center"><i title="Сортировка" class="icon16 sort"></i></td>
+                                    <td>
+                                        <strong>{$purchase_price.name|escape}</strong>
+                                    </td>
+                                    <td class="align-center">
+                                        <a class="inline purchase-edit-row" href="#" title="Редактировать"><i class="icon16 edit"></i></a>
+                                        <a class="inline purchase-delete-row" href="#" title="Удалить"><i class="icon16 no"></i></a>
+                                    </td>
+                                </tr>
+                            {/foreach}
+                            </tbody>
+                        </table>
+                    </div>
+                    <br/>
+                    <a class="inline-link purchase-add-row" href="#"><i class="icon16 add"></i><b><i>Добавить</i></b></a>
+                </div>
+            </div>
+        </div>
         <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
             <div class="field">
                 <div class="value">
                     <p class="hint">
                         Нажмите «Добавить», чтобы создать новую категорию мультицен.<br/>
                         В поле «Наименование Мульти цены» укажите название для создаваемой категории мультицены, например, «Оптовая цена» или «Дилерская цена».<br/>
-                        Поле «Группа покупателей» определяет категорию покупателей, для которых данная мультицена будет применяться.                
+                        Поле «Группа покупателей» определяет категорию покупателей, для которых данная мультицена будет применяться.
                     </p>
                     <p class="hint">
                         «Сортировка приоритета» служит, чтобы задать приоритет выбора цен для покупателей, к которым применяются сразу несколько категорий мультицен.<br/>
                         Мультицена, которая находится выше другой, имеет более высокий приоритет.<br/>
                         Для изменения порядка следования мультицен перетаскивайте строки в таблице.
                     </p>
+                    <p class="hint">
+                        «Наценка» - позволяет задать мульти цену, как цену полученную в результате добавления наценки к закупочной цене.<br/>
+                        Наценка не срабатывает, если для товара прописаны собственные настройки мультицены.
+                    </p>
                 </div>
             </div>
         </div>
+        <div class="field-group"{if !$settings.status} style="display:none"{/if}>
+            <div class="field">
+                <div class="name">
+                    Загруженные данные
+                </div>
+                <div class="value">
+                    <table class="table zebra">
+                        <thead>
+                            <tr>
+                                <th>Артикул</th>
+                                <th>Скидка</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach $discounts as $discount}
+                                <tr>
+                                    <td>{$discount.product_sku}</td>
+                                    <td>{(float)$discount.discount}%</td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="field-group"{if !$settings.status} style="display:none"{/if}>
+            <div class="field">
+                <div class="name">
+                    Файл со скидками или акциями
+                </div>
+                <div class="value">
+                    <a class="fileinput-button" href="javascript:void(0);">
+                        <i class="icon16 upload"></i> Загрузить
+                        <input class="fileupload" type="file" name="file">
+                    </a>
+                    <div class="clear-left"></div>
+                </div>
+            </div>
+        </div>
+
+
     </form>
 </div>
 
@@ -186,13 +278,8 @@
         <td>
         <strong>${price.name}</strong>
         </td>
-        <td>
-        {{if price.currency}}
-        ${price.currency}
-        {{else}}
-        Валюта товара
-        {{/if}}
-        </td>
+        <td>${price.purchase_price_name}</td>
+        <td>${price.markup}%</td>
         <td>
         <ul class="menu-v">
         {{each price.route_hash}}
@@ -238,12 +325,19 @@
         <input class="long" type="text" name="price[name]" value="${price.name}" />
         </td>
         <td>
-        <select name="price[currency]">
-        <option value=""{{if !price.currency}} selected{{/if}}>Валюта товара</option>
-        {{each currencies}}
-        <option value="${$value.code}"{{if price.currency == $value.code}} selected{{/if}}>${$value.code}</option>
+        <select name="price[purchase_price_id]">
+        <option type="checkbox" value="0"{{if price.purchase_price_id == 0}} selected{{/if}}>
+        Стандартная закупочная цена
+        </option>
+        {{each purchase_prices}}
+        <option type="checkbox" value="${$value.id}"{{if price.purchase_price_id == $value.id}} selected{{/if}}>
+        ${$value.name}
+        </option>
         {{/each}}
         </select>
+        </td>
+        <td>
+        <input class="short" type="text" name="price[markup]" value="${price.markup}" />%
         </td>
         <td>
         <ul class="menu-v">
@@ -280,15 +374,48 @@
         </td>
         </tr>
     </script>
+    <script id="purchase-price-tmpl" type="text/x-jquery-tmpl">
+        <tr data-id="${purchase_price.id}">
+        <td class="align-center"><i class="icon16 sort"></i></td>
+        <td>
+        <strong>${purchase_price.name}</strong>
+        </td>
+        <td class="align-center">
+        <a class="inline purchase-edit-row" href="#" title="Редактировать"><i class="icon16 edit"></i></a>
+        <a class="inline purchase-delete-row" href="#" title="Удалить"><i class="icon16 no"></i></a>
+        </td>
+        </tr>
+    </script>
+    <script id="purchase-price-tmpl-edit" type="text/x-jquery-tmpl">
+        <tr data-id="${purchase_price.id}">
+        <td class="align-center"><i class="icon16 sort"></i></td>
+        <td>
+        <input type="hidden" name="purchase_price[id]" value="${purchase_price.id}" />
+        <input class="long" type="text" name="purchase_price[name]" value="${purchase_price.name}" />
+        </td>
+        <td class="align-center">
+        <a class="inline purchase-save-row" href="#" title="Сохранить"><i class="icon16 yes"></i></a>
+        <a class="inline purchase-delete-row" href="#" title="Удалить"><i class="icon16 no"></i></a>
+        </td>
+        </tr>
+    </script>
 {/literal}
 
-
+<script type="text/javascript" src="{$wa_url}wa-content/js/jquery-plugins/fileupload/jquery.iframe-transport.js"></script>
+<script type="text/javascript" src="{$wa_url}wa-content/js/jquery-plugins/fileupload/jquery.fileupload.js"></script>
 <script type="text/javascript" src="{$wa_app_static_url}plugins/price/js/price_settings.js?v{$plugin->getVersion()}"></script>
 <script type="text/javascript">
-$.price_plugin.init({
-    route_hashs: {json_encode($route_hashs)},
-    categories: {json_encode($categories)},
-    currencies: {json_encode($currencies)}
-});
+    $(window).resize(function () {
+        if ($('.price-table').width() + 170 > $('#wa-plugins-content').width()) {
+            $('.scroll-table').width($('#wa-plugins-content').width() - 170);
+        } else {
+            $('.scroll-table').width('auto');
+        }
+    }).resize();
+    $.price_plugin.init({
+        route_hashs: {json_encode($route_hashs)},
+        categories: {json_encode($categories)},
+        purchase_prices: {json_encode($purchase_prices)}
+    });
 </script>
 

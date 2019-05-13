@@ -3,6 +3,6 @@
 return array(
     'app.shop' => array(
         'strict' => true,
-        'version' => '>=8.4',
+        'version' => '>=6.3',
     ),
 );

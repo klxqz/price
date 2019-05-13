@@ -10,6 +10,7 @@ class shopPricePluginSettingsGetPriceController extends waJsonController {
             }
             $price_model = new shopPricePluginModel();
             $price = $price_model->getById($id);
+            $price['markup'] = (float) $price['markup'];
             $price_params_model = new shopPricePluginParamsModel();
             $params = $price_params_model->getByField('price_id', $id, true);
             foreach ($params as $param) {

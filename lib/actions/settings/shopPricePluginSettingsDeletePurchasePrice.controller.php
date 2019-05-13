@@ -1,6 +1,6 @@
 <?php
 
-class shopPricePluginSettingsDeletePriceController extends waJsonController {
+class shopPricePluginSettingsDeletePurchasePriceController extends waJsonController {
 
     public function execute() {
         try {
@@ -8,8 +8,8 @@ class shopPricePluginSettingsDeletePriceController extends waJsonController {
             if (!$id) {
                 throw new waException('Ошибка передачи данных');
             }
-            $price_model = new shopPricePluginModel();
-            $price_model->deleteById($id);
+            $price_purchase_model = new shopPricePurchasePluginModel();
+            $price_purchase_model->deleteById($id);
         } catch (Exception $e) {
             $this->setError($e->getMessage());
         }
