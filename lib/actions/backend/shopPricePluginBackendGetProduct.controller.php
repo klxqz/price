@@ -119,4 +119,19 @@ class shopPricePluginBackendGetProductController extends shopOrdersGetProductCon
         return $services;
     }
 
+    protected function getCurrency()
+    {
+        $order_id = waRequest::get('order_id', null, waRequest::TYPE_INT);
+
+        $order_id = $order_id ? $order_id : null;
+        $currency = waRequest::get('currency');
+
+        if (!$currency && $order_id) {
+            $order_model = new shopOrderModel();
+            $order = $order_model->getOrder($order_id);
+            $currency = $order['currency'];
+        }
+        return $currency;
+    }
+
 }

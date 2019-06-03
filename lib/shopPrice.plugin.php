@@ -1,8 +1,10 @@
 <?php
 
-class shopPricePlugin extends shopPlugin {
+class shopPricePlugin extends shopPlugin
+{
 
-    public static function getUserCategoryId($contact_id = null) {
+    public static function getUserCategoryId($contact_id = null)
+    {
         if ($contact_id === null) {
             $contact_id = wa()->getUser()->getId();
         }
@@ -17,7 +19,8 @@ class shopPricePlugin extends shopPlugin {
         return $category_ids;
     }
 
-    public static function shop_currency($n, $in_currency = null, $out_currency = null, $format = true) {
+    public static function shop_currency($n, $in_currency = null, $out_currency = null, $format = true)
+    {
         /**
          * @var shopConfig $config
          */
@@ -57,7 +60,8 @@ class shopPricePlugin extends shopPlugin {
         }
     }
 
-    public static function prepareProducts($products = array(), $contact_id = null, $currency = null, $storefront = null, $price_id = null) {
+    public static function prepareProducts($products = array(), $contact_id = null, $currency = null, $storefront = null, $price_id = null)
+    {
         if (!wa('shop')->getPlugin('price')->getSettings('status') && !$price_id) {
             return $products;
         }
@@ -129,7 +133,8 @@ class shopPricePlugin extends shopPlugin {
         return $products;
     }
 
-    public static function prepareSkus($skus = array(), $contact_id = null, $currency = null, $storefront = null, $price_id = null) {
+    public static function prepareSkus($skus = array(), $contact_id = null, $currency = null, $storefront = null, $price_id = null)
+    {
         if (!wa('shop')->getPlugin('price')->getSettings('status') && !$price_id) {
             return $skus;
         }
@@ -164,7 +169,7 @@ class shopPricePlugin extends shopPlugin {
                         }
 
                         if (wa()->getEnv() == 'backend') {
-                            $sku['price'] = shop_currency($sku['price'], $currency, $product['currency'], false);
+                            //$sku['price'] = shop_currency($sku['price'], $currency, $product['currency'], false);
                         }
 
                         $price_value = $sku[$price_field];
@@ -206,7 +211,8 @@ class shopPricePlugin extends shopPlugin {
         return $skus;
     }
 
-    public function frontendProducts(&$params) {
+    public function frontendProducts(&$params)
+    {
         if (!$this->getSettings('status')) {
             return;
         }
@@ -218,7 +224,8 @@ class shopPricePlugin extends shopPlugin {
         }
     }
 
-    public function frontendCategory($category) {
+    public function frontendCategory($category)
+    {
         if (!$this->getSettings('status')) {
             return;
         }
@@ -305,7 +312,8 @@ class shopPricePlugin extends shopPlugin {
         }
     }
 
-    public function backendProductSkuSettings($params) {
+    public function backendProductSkuSettings($params)
+    {
         if (!$this->getSettings('status')) {
             return;
         }
@@ -328,7 +336,8 @@ class shopPricePlugin extends shopPlugin {
         return $html;
     }
 
-    public function productCustomFields() {
+    public function productCustomFields()
+    {
         if (!$this->getSettings('status')) {
             return;
         }
@@ -350,7 +359,8 @@ class shopPricePlugin extends shopPlugin {
         );
     }
 
-    public function productSave($params) {
+    public function productSave($params)
+    {
         if (!$this->getSettings('status')) {
             return;
         }
@@ -364,7 +374,8 @@ class shopPricePlugin extends shopPlugin {
         }
     }
 
-    public function backendOrderEdit($order) {
+    public function backendOrderEdit($order)
+    {
         if (!$this->getSettings('status')) {
             return;
         }

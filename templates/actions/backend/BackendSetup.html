@@ -77,7 +77,7 @@
                 <h2>Экспорт</h2>
                 <p>Выгрузка мульти цен в CSV-файл</p>
                 <div class="field-group">
-                    {include file="templates/includes/productSelector.html"}
+                    {include file="templates/includes/productSelector.html" hash=''}
                 </div>
                 <div class="field-group" id="plugin-price-submit-export">
                     <div class="submit">
@@ -116,19 +116,10 @@
 
 <script type="text/javascript">
     if ($.importexport.plugins.price_import) {
-        $.importexport.plugins.price_import.init({$params|json_encode});
+        $.importexport.plugins.price_import.init();
     } else {
         $.getScript('{$wa_app_static_url}plugins/price/js/importexport_import.js', function () {
-            $.importexport.plugins.price_import.init({$params|json_encode});
+            $.importexport.plugins.price_import.init();
         });
     }
-
-    if ($.importexport.plugins.price_export) {
-        $.importexport.plugins.price_export.init({$params|json_encode});
-    } else {
-        $.getScript('{$wa_app_static_url}plugins/price/js/importexport_export.js', function () {
-            $.importexport.plugins.price_export.init({$params|json_encode});
-        });
-    }
-
 </script>
