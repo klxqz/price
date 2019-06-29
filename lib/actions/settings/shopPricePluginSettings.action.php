@@ -30,6 +30,8 @@ class shopPricePluginSettingsAction extends waViewAction
         $price_params_model = new shopPricePluginParamsModel();
         foreach ($prices as &$price) {
             $params = $price_params_model->getByField('price_id', $price['id'], true);
+            $price['route_hash'] = array();
+            $price['category_id'] = array();
             if ($params) {
                 foreach ($params as $param) {
                     $price['route_hash'][] = $param['route_hash'];
