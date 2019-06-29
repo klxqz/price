@@ -75,6 +75,24 @@
         <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
             <div class="field">
                 <div class="name">
+                    Присвоение группы
+                </div>
+                <div class="value">
+                    <select name="shop_price[set_category]">
+                        <option value="">Не присваивать</option>
+                        {foreach $categories as $category}
+                            {if $category.id}
+                                <option value="{$category.id}"{if $settings.set_category == $category.id} selected{/if}>{$category.name}</option>
+                            {/if}
+                        {/foreach}
+                    </select>
+                    <p class="hint">Автоматическое присвоение выбранной группы зарегистрировавшимся посетителям</p>
+                </div>
+            </div>
+        </div>
+        <div class="field-group"{if !$settings.status|default:0} style="display:none"{/if}>
+            <div class="field">
+                <div class="name">
                     Типы цен
                 </div>
                 <div class="value">
@@ -133,7 +151,7 @@
                                                                         {$categories[$category_id].name} <i class="icon10 new-window"></i>
                                                                     </a>
                                                                 {else}
-                                                                    {$categories[$category_id].name} 
+                                                                    {$categories[$category_id].name}
                                                                 {/if}
                                                             </li>
                                                         {/if}
@@ -165,7 +183,7 @@
                     <p class="hint">
                         Нажмите «Добавить», чтобы создать новую категорию мультицен.<br/>
                         В поле «Наименование Мульти цены» укажите название для создаваемой категории мультицены, например, «Оптовая цена» или «Дилерская цена».<br/>
-                        Поле «Группа покупателей» определяет категорию покупателей, для которых данная мультицена будет применяться.                
+                        Поле «Группа покупателей» определяет категорию покупателей, для которых данная мультицена будет применяться.
                     </p>
                     <p class="hint">
                         «Сортировка приоритета» служит, чтобы задать приоритет выбора цен для покупателей, к которым применяются сразу несколько категорий мультицен.<br/>
