@@ -122,4 +122,12 @@
             $.importexport.plugins.price_import.init();
         });
     }
+
+    if ($.importexport.plugins.price_export) {
+        $.importexport.plugins.price_export.init();
+    } else {
+        $.getScript('{$wa_app_static_url}plugins/price/js/importexport_export.js', function () {
+            $.importexport.plugins.price_export.init();
+        });
+    }
 </script>
